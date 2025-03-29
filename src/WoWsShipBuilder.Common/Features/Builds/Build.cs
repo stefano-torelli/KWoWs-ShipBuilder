@@ -39,7 +39,7 @@ public class Build
     }
 
     public Build(string buildName, string shipIndex, Nation nation, IEnumerable<string> modules, IEnumerable<string> upgrades, IEnumerable<string> consumables, string captain, IEnumerable<int> skills, IEnumerable<string> signals)
-        : this(buildName, shipIndex, nation, modules.ToImmutableArray(), upgrades.ToImmutableArray(), consumables.ToImmutableArray(), captain, skills.ToImmutableArray(), signals.ToImmutableArray())
+        : this(buildName, shipIndex, nation, [.. modules], [.. upgrades], [.. consumables], captain, [.. skills], [.. signals])
     {
     }
 
@@ -89,13 +89,13 @@ public class Build
         {
             Build build;
             var byteOutput = new Span<byte>(new byte[buildString.Length]);
-            if (Convert.TryFromBase64String(buildString, byteOutput, out int _))
+            if (Convert.TryFromBase64String(buildString, byteOutput, out _))
             {
-                byte[] decodedOutput = Convert.FromBase64String(buildString);
+                var decodedOutput = Convert.FromBase64String(buildString);
                 using var inputStream = new MemoryStream(decodedOutput);
                 using var gzip = new DeflateStream(inputStream, CompressionMode.Decompress);
                 using var reader = new StreamReader(gzip, System.Text.Encoding.UTF8);
-                string buildJson = reader.ReadToEnd();
+                var buildJson = reader.ReadToEnd();
                 build = JsonSerializer.Deserialize<Build>(buildJson, AppConstants.JsonSerializerOptions) ?? throw new InvalidOperationException("Failed to deserialize build object from string");
             }
             else if (buildString.StartsWith('{') && buildString.EndsWith('}'))
@@ -120,22 +120,27 @@ public class Build
 
     internal static Build CreateFromShortString(string shortBuildString)
     {
-        string[] parts = shortBuildString.Split(";");
+        var parts = shortBuildString.Split(";");
         if (parts.Length < 8)
         {
             throw new InvalidOperationException("Received an invalid short build string");
         }
 
-        string buildName = parts.Length == 9 ? parts[8] : string.Empty;
-        string shipIndex = parts[0];
+        var buildName = parts.Length == 9 ? parts[8] : string.Empty;
+        var shipIndex = parts[0];
         var nation = GameDataHelper.GetNationFromIndex(shipIndex);
         var modules = parts[1].Split(ListSeparator).Where(x => !string.IsNullOrWhiteSpace(x)).ToImmutableArray();
         var upgrades = parts[2].Split(ListSeparator).Where(x => !string.IsNullOrWhiteSpace(x)).ToImmutableArray();
-        string captain = parts[3];
+        var captain = parts[3];
         var skills = parts[4].Split(ListSeparator).Where(x => !string.IsNullOrWhiteSpace(x)).Select(int.Parse).ToImmutableArray();
         var consumables = parts[5].Split(ListSeparator).Where(x => !string.IsNullOrWhiteSpace(x)).ToImmutableArray();
         var signals = parts[6].Split(ListSeparator).Where(x => !string.IsNullOrWhiteSpace(x)).ToImmutableArray();
-        int buildVersion = int.Parse(parts[7], CultureInfo.InvariantCulture);
+
+        if (!int.TryParse(parts[7], CultureInfo.InvariantCulture, out var buildVersion))
+        {
+            throw new InvalidOperationException("Received an invalid build number");
+        }
+
         return new(buildName, shipIndex, nation, modules, upgrades, consumables, captain, skills, signals, buildVersion);
     }
 
@@ -149,14 +154,14 @@ public class Build
     {
         if (oldBuild.BuildVersion < 3)
         {
-            oldBuild.Signals = ReduceToIndex(oldBuild.Signals).ToImmutableArray();
-            logger.LogDebug("Reducing signal names to index for build {}", oldBuild.Hash);
+            oldBuild.Signals = [.. ReduceToIndex(oldBuild.Signals)];
+            logger.LogDebug("Reducing signal names to index for build {BuildHash}", oldBuild.Hash);
         }
 
         if (oldBuild.BuildVersion < 4)
         {
-            oldBuild.Modules = ReduceToIndex(oldBuild.Modules).ToImmutableArray();
-            logger.LogDebug("Reducing module names to index for build {}", oldBuild.Hash);
+            oldBuild.Modules = [.. ReduceToIndex(oldBuild.Modules)];
+            logger.LogDebug("Reducing module names to index for build {BuildHash}", oldBuild.Hash);
         }
 
         if (oldBuild.BuildVersion < CurrentBuildVersion)
@@ -170,9 +175,9 @@ public class Build
 
     private static string CreateHash(Build build)
     {
-        string buildString = JsonSerializer.Serialize(build, AppConstants.JsonSerializerOptions);
-        byte[] textData = System.Text.Encoding.UTF8.GetBytes(buildString);
-        byte[] hash = SHA256.HashData(textData);
+        var buildString = JsonSerializer.Serialize(build, AppConstants.JsonSerializerOptions);
+        var textData = System.Text.Encoding.UTF8.GetBytes(buildString);
+        var hash = SHA256.HashData(textData);
         return Convert.ToHexString(hash);
     }
 
@@ -195,24 +200,21 @@ public class Build
 
     public string CreateStringFromBuild()
     {
-        string buildString = JsonSerializer.Serialize(this, AppConstants.JsonSerializerOptions);
+        var buildString = JsonSerializer.Serialize(this, AppConstants.JsonSerializerOptions);
         using var output = new MemoryStream();
-        using (var gzip = new DeflateStream(output, CompressionLevel.Optimal))
-        {
-            using (var writer = new StreamWriter(gzip, System.Text.Encoding.UTF8))
-            {
-                writer.Write(buildString);
-            }
-        }
+        using var gzip = new DeflateStream(output, CompressionLevel.Optimal);
+        using var writer = new StreamWriter(gzip, System.Text.Encoding.UTF8);
 
-        byte[] bytes = output.ToArray();
-        string encodedOutput = Convert.ToBase64String(bytes);
+        writer.Write(buildString);
+
+        var bytes = output.ToArray();
+        var encodedOutput = Convert.ToBase64String(bytes);
         return encodedOutput;
     }
 
     public string CreateShortStringFromBuild()
     {
-        string buildString = $"{this.ShipIndex};{string.Join(ListSeparator, ReduceToIndex(this.Modules))};{string.Join(ListSeparator, ReduceToIndex(this.Upgrades))};{this.Captain};{string.Join(ListSeparator, this.Skills)};{string.Join(ListSeparator, ReduceToIndex(this.Consumables))};{string.Join(ListSeparator, ReduceToIndex(this.Signals))};{this.BuildVersion};{this.BuildName}";
+        var buildString = $"{this.ShipIndex};{string.Join(ListSeparator, ReduceToIndex(this.Modules))};{string.Join(ListSeparator, ReduceToIndex(this.Upgrades))};{this.Captain};{string.Join(ListSeparator, this.Skills)};{string.Join(ListSeparator, ReduceToIndex(this.Consumables))};{string.Join(ListSeparator, ReduceToIndex(this.Signals))};{this.BuildVersion};{this.BuildName}";
         return buildString;
     }
 

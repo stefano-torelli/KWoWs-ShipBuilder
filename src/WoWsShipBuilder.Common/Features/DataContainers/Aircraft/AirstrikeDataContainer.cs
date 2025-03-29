@@ -4,6 +4,7 @@ using WoWsShipBuilder.DataElements.DataElementAttributes;
 using WoWsShipBuilder.DataStructures;
 using WoWsShipBuilder.DataStructures.Modifiers;
 using WoWsShipBuilder.DataStructures.Ship;
+using WoWsShipBuilder.Features.DataContainers.Projectiles;
 using WoWsShipBuilder.Infrastructure.ApplicationData;
 
 namespace WoWsShipBuilder.Features.DataContainers;
@@ -52,8 +53,8 @@ public partial class AirstrikeDataContainer : DataContainerBase
 
     public static AirstrikeDataContainer? FromShip(Ship ship, ImmutableList<Modifier> modifiers, bool isAsw)
     {
-        string header = isAsw ? "ShipStats_AswAirstrike" : "ShipStats_Airstrike";
-        ImmutableDictionary<string, AirStrike> airstrikes = ship.AirStrikes;
+        var header = isAsw ? "ShipStats_AswAirstrike" : "ShipStats_Airstrike";
+        var airstrikes = ship.AirStrikes;
         if (ship.AirStrikes.Count == 0)
         {
             return null;
@@ -67,10 +68,10 @@ public partial class AirstrikeDataContainer : DataContainerBase
             return null;
         }
 
-        decimal reload = modifiers.ApplyModifiers("AirstrikeDataContainer.Reload", airstrike.ReloadTime);
+        var reload = modifiers.ApplyModifiers("AirstrikeDataContainer.Reload", airstrike.ReloadTime);
         var uses = modifiers.ApplyModifiers("AirstrikeDataContainer.Uses", airstrike.Charges);
 
-        decimal planeHp = (decimal)plane.MaxHealth;
+        var planeHp = (decimal)plane.MaxHealth;
         var finalPlaneHp = modifiers.ApplyModifiers("AirstrikeDataContainer.PlaneHp", planeHp);
 
         ProjectileDataContainer? weapon;

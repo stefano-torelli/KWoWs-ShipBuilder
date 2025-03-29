@@ -3,20 +3,15 @@ using WoWsShipBuilder.Infrastructure.Utility;
 
 namespace WoWsShipBuilder.Infrastructure.HttpClients;
 
-public class RetryHttpHandler : DelegatingHandler
+public class RetryHttpHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
 {
     private const int MaxRetries = 3;
-
-    public RetryHttpHandler(HttpMessageHandler innerHandler)
-        : base(innerHandler)
-    {
-    }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         for (var i = 0; i < MaxRetries - 1; i++)
         {
-            HttpResponseMessage response = await base.SendAsync(request, cancellationToken);
+            var response = await base.SendAsync(request, cancellationToken);
             if (response.IsSuccessStatusCode)
             {
                 return response;

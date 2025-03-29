@@ -33,12 +33,12 @@ public partial class ConcealmentDataContainer : DataContainerBase
         var hull = ship.Hulls[shipConfiguration.First(upgrade => upgrade.UcType == ComponentType.Hull).Components[ComponentType.Hull][0]];
 
         // Sea Detection
-        decimal concealmentBySea = hull.SurfaceDetection;
-        decimal concealmentBySeaFiringSmoke = hull.SmokeFiringDetection;
+        var concealmentBySea = hull.SurfaceDetection;
+        var concealmentBySeaFiringSmoke = hull.SmokeFiringDetection;
 
         // AA Detection
-        decimal concealmentByAir = hull.AirDetection;
-        decimal concealmentBySubPeriscope = hull.DetectionBySubPeriscope;
+        var concealmentByAir = hull.AirDetection;
+        var concealmentBySubPeriscope = hull.DetectionBySubPeriscope;
 
         concealmentBySea = modifiers.ApplyModifiers("ConcealmentDataContainer.Visibility", concealmentBySea);
         concealmentByAir = modifiers.ApplyModifiers("ConcealmentDataContainer.Visibility", concealmentByAir);
@@ -56,7 +56,7 @@ public partial class ConcealmentDataContainer : DataContainerBase
             }
             else
             {
-                string hullArtilleryName = shipConfiguration.First(c => c.UcType == ComponentType.Hull).Components[ComponentType.Artillery][0];
+                var hullArtilleryName = shipConfiguration.First(c => c.UcType == ComponentType.Hull).Components[ComponentType.Artillery][0];
                 mainBattery = ship.MainBatteryModuleList[hullArtilleryName];
             }
 
@@ -71,8 +71,8 @@ public partial class ConcealmentDataContainer : DataContainerBase
             }
         }
 
-        decimal concealmentBySeaFire = concealmentBySea + 2.0m;
-        decimal concealmentByAirFire = concealmentByAir + 3.0m;
+        var concealmentBySeaFire = concealmentBySea + 2.0m;
+        var concealmentByAirFire = concealmentByAir + 3.0m;
 
         var concealment = new ConcealmentDataContainer
         {

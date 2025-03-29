@@ -4,23 +4,17 @@ using WoWsShipBuilder.Infrastructure.Localization.Resources;
 
 namespace WoWsShipBuilder.Infrastructure.Localization;
 
-public class Localizer : ILocalizer
+public class Localizer(ILocalizationProvider gameLocalizationProvider, AppSettings appSettings) : ILocalizer
 {
-    private readonly ILocalizationProvider gameLocalizationProvider;
+    private readonly ILocalizationProvider gameLocalizationProvider = gameLocalizationProvider;
 
-    private readonly AppSettings appSettings;
-
-    public Localizer(ILocalizationProvider gameLocalizationProvider, AppSettings appSettings)
-    {
-        this.gameLocalizationProvider = gameLocalizationProvider;
-        this.appSettings = appSettings;
-    }
+    private readonly AppSettings appSettings = appSettings;
 
     public LocalizationResult GetGameLocalization(string key) => this.GetGameLocalization(key, this.appSettings.SelectedLanguage);
 
     public LocalizationResult GetGameLocalization(string key, CultureDetails language)
     {
-        string? result = this.gameLocalizationProvider.GetString(key, language);
+        var result = this.gameLocalizationProvider.GetString(key, language);
         return new(result != null, result ?? key);
     }
 
@@ -39,7 +33,7 @@ public class Localizer : ILocalizer
             return new(true, key);
         }
 
-        string? result = Translation.ResourceManager.GetString(key, language.CultureInfo);
+        var result = Translation.ResourceManager.GetString(key, language.CultureInfo);
         return new(result != null, result ?? key);
     }
 

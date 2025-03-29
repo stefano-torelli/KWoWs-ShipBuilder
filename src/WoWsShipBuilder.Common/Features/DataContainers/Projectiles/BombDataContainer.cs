@@ -3,6 +3,7 @@ using WoWsShipBuilder.DataElements.DataElementAttributes;
 using WoWsShipBuilder.DataStructures.Modifiers;
 using WoWsShipBuilder.DataStructures.Projectile;
 using WoWsShipBuilder.Features.BallisticCharts;
+using WoWsShipBuilder.Features.DataContainers.Projectiles;
 using WoWsShipBuilder.Infrastructure.ApplicationData;
 using WoWsShipBuilder.Infrastructure.GameData;
 
@@ -69,8 +70,8 @@ public partial class BombDataContainer : ProjectileDataContainer
         decimal fuseTimer = 0;
         var showBlastPenetration = true;
         decimal fireChance = 0;
-        int penetrationHe = 0;
-        int penetrationAp = 0;
+        var penetrationHe = 0;
+        var penetrationAp = 0;
 
         if (bomb.BombType.Equals(DataStructures.BombType.AP))
         {
@@ -112,8 +113,12 @@ public partial class BombDataContainer : ProjectileDataContainer
         return bombDataContainer;
     }
 
+#pragma warning disable IDE0060 // Remove unused parameter
+#pragma warning disable S1172 // Unused method parameters should be removed
     private bool ShouldDisplayBlastPenetration(object obj)
     {
         return this.ShowBlastPenetration;
     }
+#pragma warning restore S1172 // Unused method parameters should be removed
+#pragma warning restore IDE0060 // Remove unused parameter
 }

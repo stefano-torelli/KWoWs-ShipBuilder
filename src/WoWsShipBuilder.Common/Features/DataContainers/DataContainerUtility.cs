@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using WoWsShipBuilder.DataStructures.Modifiers;
 using WoWsShipBuilder.DataStructures.Ship;
 using WoWsShipBuilder.Infrastructure.Utility;
@@ -9,12 +9,12 @@ public static class DataContainerUtility
 {
     public static ShipDataContainer GetShipDataContainerFromBuild(Ship ship, IEnumerable<string> selectedModules, IEnumerable<ShipUpgrade> shipConfiguration, ImmutableList<Modifier> modifiers)
     {
-        return ShipDataContainer.CreateFromShip(ship, Helpers.GetShipConfigurationFromBuild(selectedModules, shipConfiguration).ToImmutableList(), modifiers);
+        return ShipDataContainer.CreateFromShip(ship, [.. Helpers.GetShipConfigurationFromBuild(selectedModules, shipConfiguration)], modifiers);
     }
 
     public static ShipDataContainer GetStockShipDataContainer(Ship ship)
     {
-        return ShipDataContainer.CreateFromShip(ship, Helpers.GetStockShipConfiguration(ship).ToImmutableList(), ImmutableList<Modifier>.Empty);
+        return ShipDataContainer.CreateFromShip(ship, [.. Helpers.GetStockShipConfiguration(ship)], []);
     }
 
     public static decimal ApplyModifiers(this List<Modifier> modifierList, string propertySelector, decimal initialValue)
@@ -39,7 +39,7 @@ public static class DataContainerUtility
 
     public static void UpdateConsumableModifierValue(this List<Modifier> consumableModifierList, ImmutableList<Modifier> modifierList, string propertySelector, string modifierName)
     {
-        var modifier = consumableModifierList.Find(x => x.Name.Equals(modifierName));
+        var modifier = consumableModifierList.Find(x => x.Name.Equals(modifierName, StringComparison.OrdinalIgnoreCase));
         var newValue = (float)modifierList.ApplyModifiers(propertySelector, (decimal)(modifier?.Value ?? 0));
         if (modifier == null)
         {

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 
 namespace WoWsShipBuilder.Infrastructure.Utility;
 
@@ -20,7 +20,7 @@ public class CustomObservableCollection<T> : ObservableCollection<T>
 
     public void AddRange(IEnumerable<T> items)
     {
-        List<T> itemList = items.ToList();
+        var itemList = items.ToList();
         if (itemList.Count == 0)
         {
             return;
@@ -39,7 +39,7 @@ public class CustomObservableCollection<T> : ObservableCollection<T>
 
     public void RemoveRange(IEnumerable<T> items)
     {
-        List<T> itemList = items.ToList();
+        var itemList = items.ToList();
         if (itemList.Count == 0)
         {
             return;
@@ -58,7 +58,7 @@ public class CustomObservableCollection<T> : ObservableCollection<T>
 
     public int FindIndex(Predicate<T> match)
     {
-        int endIndex = this.Count;
+        var endIndex = this.Count;
         for (var i = 0; i < endIndex; i++)
         {
             if (match(this[i]))

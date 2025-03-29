@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
@@ -59,7 +59,7 @@ public class DataElementGenerator : IIncrementalGenerator
     private static ContainerData ExtractPropertyGroups(RawContainerData rawContainerData, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-        IEnumerable<PropertyData> propertyGroups = rawContainerData.Properties
+        var propertyGroups = rawContainerData.Properties
             .Where(prop => (prop.DataElementType & DataElementTypes.Grouped) == DataElementTypes.Grouped)
             .GroupBy(prop => prop.DisplayOptions.GroupKey!)
             .Select(CreatePropertyGroup)

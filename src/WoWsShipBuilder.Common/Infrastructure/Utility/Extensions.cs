@@ -39,21 +39,21 @@ public static class Extensions
     {
         if (strict)
         {
-            return dataSource.FindIndex(modifier => modifier.Key.Equals(filter, StringComparison.InvariantCultureIgnoreCase));
+            return dataSource.FindIndex(modifier => modifier.Key.Equals(filter, StringComparison.OrdinalIgnoreCase));
         }
 
-        return dataSource.FindIndex(modifier => modifier.Key.Contains(filter, StringComparison.InvariantCultureIgnoreCase));
+        return dataSource.FindIndex(modifier => modifier.Key.Contains(filter, StringComparison.OrdinalIgnoreCase));
     }
 
     public static IEnumerable<float> FindModifiers(this IEnumerable<(string Key, float Value)> dataSource, string filter, bool strict = false)
     {
         if (strict)
         {
-            return dataSource.Where(modifier => modifier.Key.Equals(filter, StringComparison.InvariantCultureIgnoreCase))
+            return dataSource.Where(modifier => modifier.Key.Equals(filter, StringComparison.OrdinalIgnoreCase))
                 .Select(modifier => modifier.Value);
         }
 
-        return dataSource.Where(modifier => modifier.Key.Contains(filter, StringComparison.InvariantCultureIgnoreCase))
+        return dataSource.Where(modifier => modifier.Key.Contains(filter, StringComparison.OrdinalIgnoreCase))
             .Select(modifier => modifier.Value);
     }
 

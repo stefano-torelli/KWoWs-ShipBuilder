@@ -1,18 +1,13 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 
 namespace WoWsShipBuilder.Features.ShipStats;
 
-public sealed class MouseEventInterop : IAsyncDisposable
+public sealed class MouseEventInterop(IJSRuntime runtime) : IAsyncDisposable
 {
-    private readonly IJSRuntime runtime;
+    private readonly IJSRuntime runtime = runtime;
 
     private IJSObjectReference? module;
-
-    public MouseEventInterop(IJSRuntime runtime)
-    {
-        this.runtime = runtime;
-    }
 
     public async Task PreventMiddleClickDefault(string id)
     {
@@ -45,6 +40,7 @@ public sealed class MouseEventInterop : IAsyncDisposable
             }
             catch (JSDisconnectedException)
             {
+                // The JS runtime is disconnected, so we don't need to dispose the module.
             }
         }
     }

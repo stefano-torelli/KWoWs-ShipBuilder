@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using DynamicData;
 using ReactiveUI;
 using WoWsShipBuilder.DataStructures;
@@ -26,7 +26,7 @@ namespace WoWsShipBuilder.Features.ShipStats.ViewModels
 
         private List<List<ShipUpgrade>> shipUpgrades = null!;
 
-        // TODO: remove this constructor
+        // Remove this constructor
         public ShipModuleViewModel()
             : this(TestUpgradeInfo)
         {
@@ -34,8 +34,8 @@ namespace WoWsShipBuilder.Features.ShipStats.ViewModels
 
         public ShipModuleViewModel(UpgradeInfo upgradeInfo)
         {
-            this.ShipUpgrades = ShipModuleHelper.GroupAndSortUpgrades(upgradeInfo.ShipUpgrades).OrderBy(entry => entry.Key).Select(entry => entry.Value).ToList();
-            foreach (List<ShipUpgrade> upgrade in this.ShipUpgrades)
+            this.ShipUpgrades = [.. ShipModuleHelper.GroupAndSortUpgrades(upgradeInfo.ShipUpgrades).OrderBy(entry => entry.Key).Select(entry => entry.Value)];
+            foreach (var upgrade in this.ShipUpgrades)
             {
                 this.SelectedModules.Add(upgrade[0]);
             }
@@ -51,7 +51,7 @@ namespace WoWsShipBuilder.Features.ShipStats.ViewModels
             }
         }
 
-        public CustomObservableCollection<ShipUpgrade> SelectedModules { get; } = new();
+        public CustomObservableCollection<ShipUpgrade> SelectedModules { get; } = [];
 
         public void SelectModuleExecute(ShipUpgrade parameter)
         {
@@ -60,7 +60,7 @@ namespace WoWsShipBuilder.Features.ShipStats.ViewModels
                 return;
             }
 
-            ShipUpgrade? oldItem = this.SelectedModules.FirstOrDefault(module => module.UcType == parameter.UcType);
+            var oldItem = this.SelectedModules.FirstOrDefault(module => module.UcType == parameter.UcType);
             if (oldItem != null)
             {
                 this.SelectedModules.Replace(oldItem, parameter);
@@ -74,7 +74,7 @@ namespace WoWsShipBuilder.Features.ShipStats.ViewModels
         public void LoadBuild(IEnumerable<string> storedData)
         {
             var results = new List<ShipUpgrade>();
-            foreach (List<ShipUpgrade> upgradeList in this.ShipUpgrades)
+            foreach (var upgradeList in this.ShipUpgrades)
             {
                 results.AddRange(upgradeList.Where(upgrade => storedData.Contains(upgrade.Name.NameToIndex())));
             }
@@ -86,7 +86,7 @@ namespace WoWsShipBuilder.Features.ShipStats.ViewModels
 
         public List<string> SaveBuild()
         {
-            return this.SelectedModules.Select(upgrade => upgrade.Name.NameToIndex()).ToList();
+            return [.. this.SelectedModules.Select(upgrade => upgrade.Name.NameToIndex())];
         }
     }
 }

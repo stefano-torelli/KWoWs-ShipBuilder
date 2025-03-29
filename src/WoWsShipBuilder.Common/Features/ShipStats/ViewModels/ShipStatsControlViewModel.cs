@@ -6,16 +6,11 @@ using WoWsShipBuilder.Features.DataContainers;
 
 namespace WoWsShipBuilder.Features.ShipStats.ViewModels;
 
-public partial class ShipStatsControlViewModel : ReactiveObject
+public partial class ShipStatsControlViewModel(Ship ship) : ReactiveObject
 {
     private ShipDataContainer? currentShipStats;
 
     private bool isSpecialAbilityActive;
-
-    public ShipStatsControlViewModel(Ship ship)
-    {
-        this.BaseShipStats = ship;
-    }
 
     public ShipDataContainer? CurrentShipStats
     {
@@ -30,7 +25,7 @@ public partial class ShipStatsControlViewModel : ReactiveObject
     }
 
     // this is the ship base stats. do not modify after creation
-    private Ship BaseShipStats { get; set; }
+    private Ship BaseShipStats { get; set; } = ship;
 
     public async Task UpdateShipStats(ImmutableList<ShipUpgrade> selectedConfiguration, ImmutableList<Modifier> modifiers)
     {
@@ -44,14 +39,14 @@ public partial class ShipStatsControlViewModel : ReactiveObject
         {
             if (this.BaseShipStats.SpecialAbility is not null)
             {
-                return this.BaseShipStats.SpecialAbility.Modifiers.ToList();
+                return [.. this.BaseShipStats.SpecialAbility.Modifiers];
             }
             else if (this.BaseShipStats.MainBatteryModuleList.FirstOrDefault().Value.BurstModeAbility is not null)
             {
-                return this.BaseShipStats.MainBatteryModuleList.FirstOrDefault().Value.BurstModeAbility!.Modifiers.ToList();
+                return [.. this.BaseShipStats.MainBatteryModuleList.FirstOrDefault().Value.BurstModeAbility!.Modifiers];
             }
         }
 
-        return new();
+        return [];
     }
 }

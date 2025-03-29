@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using WoWsShipBuilder.DataStructures;
@@ -17,7 +17,7 @@ public partial class BuildStringCreation
         const string buildName = "test-build";
         const string shipIndex = "PASC020";
         var expectedString = $"{shipIndex};;;PCW001;;;;{Build.CurrentBuildVersion};{buildName}";
-        var build = new Build(buildName, shipIndex, Nation.Usa, ImmutableArray<string>.Empty, ImmutableArray<string>.Empty, ImmutableArray<string>.Empty, "PCW001", ImmutableArray<int>.Empty, ImmutableArray<string>.Empty);
+        var build = new Build(buildName, shipIndex, Nation.Usa, [], [], [], "PCW001", [], []);
 
         var result = build.CreateShortStringFromBuild();
 
@@ -29,7 +29,7 @@ public partial class BuildStringCreation
     {
         const string buildName = "test-build";
         const string shipIndex = "PASC020";
-        var build = new Build(buildName, shipIndex, Nation.Usa, ImmutableArray<string>.Empty, ImmutableArray<string>.Empty, ImmutableArray<string>.Empty, "PCW001", ImmutableArray<int>.Empty, ImmutableArray<string>.Empty);
+        var build = new Build(buildName, shipIndex, Nation.Usa, [], [], [], "PCW001", [], []);
         var buildString = build.CreateShortStringFromBuild();
 
         var result = this.buildRegex.Match(buildString);
@@ -46,7 +46,7 @@ public partial class BuildStringCreation
     public void EmptyBuild_CreateShortStringWithoutBuildName_MatchesRegex()
     {
         const string shipIndex = "PASC020";
-        var build = new Build(string.Empty, shipIndex, Nation.Usa, ImmutableArray<string>.Empty, ImmutableArray<string>.Empty, ImmutableArray<string>.Empty, "PCW001", ImmutableArray<int>.Empty, ImmutableArray<string>.Empty);
+        var build = new Build("", shipIndex, Nation.Usa, [], [], [], "PCW001", [], []);
         var buildString = build.CreateShortStringFromBuild();
 
         var result = this.buildRegex.Match(buildString);

@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -43,8 +43,8 @@ public sealed class FirebaseLinkShortener : ILinkShortener, IDisposable
     public async Task<ShorteningResult> CreateLinkForBuild(Build build)
     {
         this.logger.LogInformation("Creating short link for build {BuildHash}", build.Hash);
-        string buildString = build.CreateShortStringFromBuild();
-        string encodedBuild = WebUtility.UrlEncode(buildString);
+        var buildString = build.CreateShortStringFromBuild();
+        var encodedBuild = WebUtility.UrlEncode(buildString);
 
         var path = $"/ship?shipIndexes={build.ShipIndex}&build={encodedBuild}";
 

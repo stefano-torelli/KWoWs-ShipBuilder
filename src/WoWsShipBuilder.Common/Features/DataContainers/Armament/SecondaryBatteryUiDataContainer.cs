@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Globalization;
 using WoWsShipBuilder.DataElements;
 using WoWsShipBuilder.DataElements.DataElementAttributes;
@@ -36,7 +36,7 @@ public partial class SecondaryBatteryUiDataContainer : DataContainerBase
         var secondaries = SecondaryBatteryDataContainer.FromShip(ship, shipConfiguration, modifiers);
         var secondaryBatteryUiDataContainer = new SecondaryBatteryUiDataContainer
         {
-            Secondaries = secondaries?.ToImmutableList() ?? ImmutableList<SecondaryBatteryDataContainer>.Empty,
+            Secondaries = secondaries?.ToImmutableList() ?? [],
             ShellType = secondaries?[0].Shell?.Type ?? string.Empty,
             Range = secondaries?[0].Range ?? 0,
             TotalRoF = secondaries?.Sum(x => x.RoF) ?? 0,

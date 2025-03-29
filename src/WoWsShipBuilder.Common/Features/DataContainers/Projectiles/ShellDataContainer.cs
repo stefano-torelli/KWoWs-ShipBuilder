@@ -91,18 +91,19 @@ public partial class ShellDataContainer : DataContainerBase
 
     private static ShellDataContainer ProcessShell(ImmutableList<Modifier> modifiers, int barrelCount, bool isMainGunShell, string shellName)
     {
+#pragma warning disable IDE0047 // Remove unnecessary parentheses
         var shell = AppData.FindProjectile<ArtilleryShell>(shellName);
 
         // Values that may be ignored depending on shell type
-        decimal armingThreshold = Math.Round((decimal)shell.ArmingThreshold);
-        decimal fuseTimer = Math.Round((decimal)shell.FuseTimer, 3);
-        decimal overmatch = Math.Truncate((decimal)(shell.Caliber * 1000 / 14.3));
+        var armingThreshold = Math.Round((decimal)shell.ArmingThreshold);
+        var fuseTimer = Math.Round((decimal)shell.FuseTimer, 3);
+        var overmatch = Math.Truncate((decimal)(shell.Caliber * 1000 / 14.3));
 
-        decimal shellDamage = (decimal)shell.Damage;
-        decimal shellFireChance = (decimal)shell.FireChance * 100;
-        decimal shellPenetration = (decimal)shell.Penetration;
-        float shellAirDrag = shell.AirDrag;
-        float shellMass = shell.Mass;
+        var shellDamage = (decimal)shell.Damage;
+        var shellFireChance = (decimal)shell.FireChance * 100;
+        var shellPenetration = (decimal)shell.Penetration;
+        var shellAirDrag = shell.AirDrag;
+        var shellMass = shell.Mass;
         var showBlastPenetration = false;
 
         var gunType = isMainGunShell ? "Main" : "Secondary";
@@ -110,46 +111,50 @@ public partial class ShellDataContainer : DataContainerBase
         switch (shell.ShellType)
         {
             case ShellType.HE:
-            {
-                overmatch = 0;
-                showBlastPenetration = true;
-
-                // IFHE fire chance malus
-                shellFireChance = modifiers.ApplyModifiers($"ShellDataContainer.FireChance.{gunType}.Multiplier", shellFireChance);
-
-                // Victor Lima and India X-Ray signals
-                shellFireChance = modifiers.ApplyModifiers(shell.Caliber > 0.160f ? $"ShellDataContainer.FireChance.{gunType}.Big.Additive" : $"ShellDataContainer.FireChance.{gunType}.Small.Additive", shellFireChance);
-
-                // Demolition expert and talent
-                shellFireChance = modifiers.ApplyModifiers($"ShellDataContainer.FireChance.{gunType}", shellFireChance);
-
-                // IFHE and possibly modifiers from supership abilities
-                shellPenetration = modifiers.ApplyModifiers($"ShellDataContainer.Penetration.{gunType}", shellPenetration);
-                goto case ShellType.SAP;
-            }
-
-            case ShellType.SAP:
-            {
-                armingThreshold = 0;
-                fuseTimer = 0;
-                shellDamage = modifiers.ApplyModifiers($"ShellDataContainer.Damage.HESAP.{gunType}", shellDamage);
-                break;
-            }
-
-            case ShellType.AP:
-            {
-                if (shell.Caliber >= 0.190f)
                 {
-                    shellDamage = modifiers.ApplyModifiers("ShellDataContainer.Damage.BigAp", shellDamage);
+                    overmatch = 0;
+                    showBlastPenetration = true;
+
+                    // IFHE fire chance malus
+                    shellFireChance = modifiers.ApplyModifiers($"ShellDataContainer.FireChance.{gunType}.Multiplier", shellFireChance);
+
+                    // Victor Lima and India X-Ray signals
+                    shellFireChance = modifiers.ApplyModifiers(shell.Caliber > 0.160f ? $"ShellDataContainer.FireChance.{gunType}.Big.Additive" : $"ShellDataContainer.FireChance.{gunType}.Small.Additive", shellFireChance);
+
+                    // Demolition expert and talent
+                    shellFireChance = modifiers.ApplyModifiers($"ShellDataContainer.FireChance.{gunType}", shellFireChance);
+
+                    // IFHE and possibly modifiers from supership abilities
+                    shellPenetration = modifiers.ApplyModifiers($"ShellDataContainer.Penetration.{gunType}", shellPenetration);
+
+                    armingThreshold = 0;
+                    fuseTimer = 0;
+                    shellDamage = modifiers.ApplyModifiers($"ShellDataContainer.Damage.HESAP.{gunType}", shellDamage);
+                    break;
                 }
 
-                shellDamage = modifiers.ApplyModifiers("ShellDataContainer.Damage.Ap", shellDamage);
-                break;
-            }
+            case ShellType.SAP:
+                {
+                    armingThreshold = 0;
+                    fuseTimer = 0;
+                    shellDamage = modifiers.ApplyModifiers($"ShellDataContainer.Damage.HESAP.{gunType}", shellDamage);
+                    break;
+                }
+
+            case ShellType.AP:
+                {
+                    if (shell.Caliber >= 0.190f)
+                    {
+                        shellDamage = modifiers.ApplyModifiers("ShellDataContainer.Damage.BigAp", shellDamage);
+                    }
+
+                    shellDamage = modifiers.ApplyModifiers("ShellDataContainer.Damage.Ap", shellDamage);
+                    break;
+                }
         }
 
-        decimal minRicochet = Math.Round((decimal)shell.RicochetAngle, 1);
-        decimal maxRicochet = Math.Round((decimal)shell.AlwaysRicochetAngle, 1);
+        var minRicochet = Math.Round((decimal)shell.RicochetAngle, 1);
+        var maxRicochet = Math.Round((decimal)shell.AlwaysRicochetAngle, 1);
 
         var fireChancePerSalvo = (decimal)(1 - Math.Pow((double)(1 - (shellFireChance / 100)), barrelCount));
 
@@ -186,10 +191,16 @@ public partial class ShellDataContainer : DataContainerBase
 
         shellDataContainer.UpdateDataElements();
         return shellDataContainer;
+#pragma warning restore IDE0047 // Remove unnecessary parentheses
     }
+
+#pragma warning disable IDE0060 // Remove unused parameter
+#pragma warning disable S1172 // Unused method parameters should be removed
 
     private bool ShouldDisplayBlastPenetration(object obj)
     {
         return this.ShowBlastPenetration;
     }
+#pragma warning restore S1172 // Unused method parameters should be removed
+#pragma warning restore IDE0060 // Remove unused parameter
 }

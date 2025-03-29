@@ -1,34 +1,26 @@
-﻿using Microsoft.JSInterop;
-
-namespace WoWsShipBuilder.Web.Infrastructure;
+using Microsoft.JSInterop;
 
 using WoWsShipBuilder.Infrastructure.DataTransfer;
 
+namespace WoWsShipBuilder.Web.Infrastructure;
 /// <summary>
 /// Implementation of the clipboard service for the web app.
 /// Allows to set and read text from the clipboard.
 /// </summary>
-public class WebClipboardService : IClipboardService
+public class WebClipboardService(IJSRuntime jsRuntime) : IClipboardService
 {
-    private readonly IJSRuntime jsRuntime;
-
-    public WebClipboardService(IJSRuntime jsRuntime)
-    {
-        this.jsRuntime = jsRuntime;
-    }
-
     public async Task<string> GetTextAsync()
     {
-        return await this.jsRuntime.InvokeAsync<string>("navigator.clipboard.readText");
+        return await jsRuntime.InvokeAsync<string>("navigator.clipboard.readText");
     }
 
     public async Task SetTextAsync(string text)
     {
-        await this.jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
+        await jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
     }
-
-    public Task ClearAsync()
+    public async Task ClearAsync()
     {
-        return Task.CompletedTask;
+        // Implement the method to clear the clipboard if needed
+        await Task.CompletedTask;
     }
 }

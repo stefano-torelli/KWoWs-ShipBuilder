@@ -15,7 +15,7 @@ namespace WoWsShipBuilder.Features.ShipStats.ViewModels;
 
 public sealed partial class ShipViewModel : ReactiveObject, IDisposable
 {
-    private readonly CompositeDisposable disposables = new();
+    private readonly CompositeDisposable disposables = [];
 
     private readonly ILogger<ShipViewModel> logger;
 
@@ -40,7 +40,7 @@ public sealed partial class ShipViewModel : ReactiveObject, IDisposable
     private Ship effectiveShipData = null!;
 
     [Observable]
-    private List<ShipSummary>? nextShips = new();
+    private List<ShipSummary>? nextShips = [];
 
     [Observable]
     private ShipSummary? previousShip;
@@ -109,7 +109,7 @@ public sealed partial class ShipViewModel : ReactiveObject, IDisposable
         this.CaptainSkillSelectorViewModel = new(this.RawShipData.ShipClass, CaptainSkillSelectorViewModel.LoadParams(ship.ShipNation));
         this.ShipModuleViewModel = new(this.RawShipData.ShipUpgradeInfo);
         this.UpgradePanelViewModel = new(this.RawShipData, AppData.ModernizationCache);
-        this.ConsumableViewModel = ConsumableViewModel.Create(this.RawShipData, new List<string>(), Logging.LoggerFactory);
+        this.ConsumableViewModel = ConsumableViewModel.Create(this.RawShipData, [], Logging.LoggerFactory);
 
         this.ShipStatsControlViewModel = new(this.EffectiveShipData);
 
@@ -175,11 +175,11 @@ public sealed partial class ShipViewModel : ReactiveObject, IDisposable
                         await this.semaphore.WaitAsync(token);
                         try
                         {
-                            ImmutableList<Modifier> modifiers = this.GenerateModifierList();
+                            var modifiers = this.GenerateModifierList();
                             if (this.ShipStatsControlViewModel != null)
                             {
                                 this.logger.LogDebug("Updating ship stats");
-                                await this.ShipStatsControlViewModel.UpdateShipStats(this.ShipModuleViewModel.SelectedModules.ToImmutableList(), modifiers);
+                                await this.ShipStatsControlViewModel.UpdateShipStats([.. this.ShipModuleViewModel.SelectedModules], modifiers);
                             }
 
                             this.ConsumableViewModel.UpdateConsumableData(modifiers, this.ShipStatsControlViewModel!.CurrentShipStats!.SurvivabilityDataContainer.HitPoints, this.RawShipData.ShipClass);
@@ -200,14 +200,13 @@ public sealed partial class ShipViewModel : ReactiveObject, IDisposable
 
     private ImmutableList<Modifier> GenerateModifierList()
     {
-        var modifiers = new List<Modifier>();
-
-        modifiers.AddRange(this.UpgradePanelViewModel.GetModifierList());
+        List<Modifier> modifiers = [..this.UpgradePanelViewModel.GetModifierList()];
         modifiers.AddRange(this.SignalSelectorViewModel!.GetModifierList());
         modifiers.AddRange(this.CaptainSkillSelectorViewModel!.GetModifiersList());
         modifiers.AddRange(this.ConsumableViewModel.GetModifiersList());
         modifiers.AddRange(this.ShipStatsControlViewModel!.GetSpecialAbilityModifiers());
-        return modifiers.ToImmutableList();
+
+        return [.. modifiers];
     }
 
     public void Dispose()

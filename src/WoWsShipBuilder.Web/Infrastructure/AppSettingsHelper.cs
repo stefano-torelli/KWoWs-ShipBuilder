@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.JSInterop;
 using WoWsShipBuilder.Features.Settings;
@@ -6,16 +6,9 @@ using WoWsShipBuilder.Infrastructure.ApplicationData;
 
 namespace WoWsShipBuilder.Web.Infrastructure;
 
-public sealed class WebSettingsAccessor : IAsyncDisposable, ISettingsAccessor
+public sealed class WebSettingsAccessor(IJSRuntime runtime) : IAsyncDisposable, ISettingsAccessor
 {
-    private readonly IJSRuntime runtime;
-
     private IJSObjectReference? module;
-
-    public WebSettingsAccessor(IJSRuntime runtime)
-    {
-        this.runtime = runtime;
-    }
 
     public async Task<AppSettings?> LoadSettings()
     {
@@ -40,7 +33,7 @@ public sealed class WebSettingsAccessor : IAsyncDisposable, ISettingsAccessor
     {
         // module is not null after this method but apparently, Roslyn does not want to recognize that.
 #pragma warning disable CS8774
-        this.module ??= await this.runtime.InvokeAsync<IJSObjectReference>("import", "/_content/WoWsShipBuilder.Common/scripts/settingsHelper.js");
+        this.module ??= await runtime.InvokeAsync<IJSObjectReference>("import", "/_content/WoWsShipBuilder.Common/scripts/settingsHelper.js");
 #pragma warning restore CS8774
     }
 

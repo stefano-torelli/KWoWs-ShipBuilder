@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using WoWsShipBuilder.DataStructures.Modifiers;
 using WoWsShipBuilder.DataStructures.Ship;
 using WoWsShipBuilder.Features.Builds;
@@ -10,7 +10,7 @@ public sealed record ShipBuildContainer(Ship Ship, Build? Build, Guid Id, Immuta
 {
     public static ShipBuildContainer CreateNew(Ship ship, Build? build, ImmutableArray<int> activatedConsumableSlots, bool specialAbilityActive = false)
     {
-        return new(ship, build, Guid.NewGuid(), activatedConsumableSlots, specialAbilityActive, null, ImmutableList<Modifier>.Empty);
+        return new(ship, build, Guid.NewGuid(), activatedConsumableSlots, specialAbilityActive, null, []);
     }
 
     /// <summary>
@@ -51,8 +51,8 @@ public sealed record ShipBuildContainer(Ship Ship, Build? Build, Guid Id, Immuta
             return false;
         }
 
-        IOrderedEnumerable<int> oldConsumables = this.ActivatedConsumableSlots.OrderBy(i => i);
-        IOrderedEnumerable<int> newConsumables = newContainer.ActivatedConsumableSlots.OrderBy(i => i);
+        var oldConsumables = this.ActivatedConsumableSlots.OrderBy(i => i);
+        var newConsumables = newContainer.ActivatedConsumableSlots.OrderBy(i => i);
         return oldConsumables.SequenceEqual(newConsumables);
     }
 }

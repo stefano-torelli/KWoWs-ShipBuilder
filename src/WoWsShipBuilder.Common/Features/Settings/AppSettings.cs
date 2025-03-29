@@ -6,17 +6,12 @@ using ServerType = WoWsShipBuilder.Infrastructure.GameData.ServerType;
 
 namespace WoWsShipBuilder.Features.Settings;
 
-public class AppSettings
+[method: JsonConstructor]
+public class AppSettings(CultureDetails? selectedLanguage = null)
 {
-    [JsonConstructor]
-    public AppSettings(CultureDetails? selectedLanguage = null)
-    {
-        this.SelectedLanguage = selectedLanguage ?? AppConstants.DefaultCultureDetails;
-    }
-
     public bool AutoUpdateEnabled { get; set; } = true;
 
-    public CultureDetails SelectedLanguage { get; set; }
+    public CultureDetails SelectedLanguage { get; set; } = selectedLanguage ?? AppConstants.DefaultCultureDetails;
 
     public ServerType SelectedServerType { get; set; } = ServerType.Live;
 
@@ -44,9 +39,9 @@ public class AppSettings
 
     public bool OpenSecondariesAndAaExpandersByDefault { get; set; }
 
-    public List<string> BetaAccessCodes { get; set; } = new();
+    public List<string> BetaAccessCodes { get; set; } = [];
 
-    public bool[] BuildImageLayoutSettings { get; set; } = { true, false, true, true, true, true };
+    public bool[] BuildImageLayoutSettings { get; set; } = [true, false, true, true, true, true];
 
     public bool ShipComparisonUseUpgradedModules { get; set; } = true;
 
@@ -92,8 +87,8 @@ public class AppSettings
         this.OpenAllMainExpandersByDefault = true;
         this.OpenAllAmmoExpandersByDefault = false;
         this.OpenSecondariesAndAaExpandersByDefault = false;
-        this.BetaAccessCodes = new();
-        this.BuildImageLayoutSettings = new[] { true, false, true, true, true, true };
+        this.BetaAccessCodes = [];
+        this.BuildImageLayoutSettings = [true, false, true, true, true, true];
         this.ShipComparisonMainBatteryFiringRange = 10;
         this.ShipComparisonSecondaryBatteryFiringRange = 5;
         this.ShipComparisonUseUpgradedModules = true;

@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Options;
@@ -7,23 +7,16 @@ using WoWsShipBuilder.Web.Infrastructure;
 
 namespace WoWsShipBuilder.Web.Features.Authentication;
 
-public class AuthenticationService
+public class AuthenticationService(ILogger<AuthenticationService> logger, IOptions<AdminOptions> options, HttpClient client)
 {
-    private readonly ILogger<AuthenticationService> logger;
-    private readonly AdminOptions options;
-    private readonly HttpClient client;
-
-    public AuthenticationService(ILogger<AuthenticationService> logger, IOptions<AdminOptions> options, HttpClient client)
-    {
-        this.logger = logger;
-        this.client = client;
-        this.options = options.Value;
-    }
+    private readonly ILogger<AuthenticationService> logger = logger;
+    private readonly AdminOptions options = options.Value;
+    private readonly HttpClient client = client;
 
     public async Task<bool> VerifyToken(string accountId, string accessToken)
     {
-        long numericId = long.Parse(accountId, CultureInfo.InvariantCulture);
-        string server = numericId switch
+        var numericId = long.Parse(accountId, CultureInfo.InvariantCulture);
+        var server = numericId switch
         {
             > 500_000_000 and < 1_000_000_000 => "eu",
             > 1_000_000_000 and < 2_000_000_000 => "com",
@@ -31,7 +24,7 @@ public class AuthenticationService
             _ => throw new InvalidOperationException("unsupported account id range"),
         };
 
-        this.logger.LogInformation("Verifying access token for account {}", accountId);
+        this.logger.LogInformation("Verifying access token for account {AccountId}", accountId);
         var checkUrl = @$"https://api.worldofwarships.{server}/wows/account/info/?application_id={this.options.WgApiKey}&account_id={accountId}&access_token={accessToken}&fields=private";
         var request = new HttpRequestMessage(HttpMethod.Get, checkUrl);
         var response = await this.client.SendAsync(request);
@@ -39,15 +32,15 @@ public class AuthenticationService
         if (response.IsSuccessStatusCode)
         {
             var responseData = await response.Content.ReadFromJsonAsync<WgResponse>();
-            if (responseData is not null && responseData.Status.Equals("ok", StringComparison.Ordinal))
+            if (responseData is not null && responseData.Status.Equals("ok", StringComparison.OrdinalIgnoreCase))
             {
                 var privateData = responseData.Data.FirstOrDefault().Value?.Private;
-                this.logger.LogInformation("Token-verification for account {} successful", accountId);
+                this.logger.LogInformation("Token-verification for account {AccountId} successful", accountId);
                 return privateData is not null && privateData.Count != 0;
             }
         }
 
-        this.logger.LogInformation("Token-verification for account {} failed", accountId);
+        this.logger.LogInformation("Token-verification for account {AccountId} failed", accountId);
         return false;
     }
 

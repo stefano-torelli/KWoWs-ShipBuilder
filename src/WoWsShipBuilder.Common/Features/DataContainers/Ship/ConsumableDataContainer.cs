@@ -35,7 +35,7 @@ public partial class ConsumableDataContainer : DataContainerBase
     [DataElementType(DataElementTypes.KeyValueUnit, UnitKey = "S")]
     public decimal WorkTime { get; set; }
 
-    public ImmutableList<Modifier> Modifiers { get; set; } = ImmutableList<Modifier>.Empty;
+    public ImmutableList<Modifier> Modifiers { get; set; } = [];
 
     public static ConsumableDataContainer FromTypeAndVariant(ShipConsumable consumable, ImmutableList<Modifier> modifiers, bool isCvPlanes, int shipHp, ShipClass shipClass)
     {
@@ -63,7 +63,7 @@ public partial class ConsumableDataContainer : DataContainerBase
                 Group = "error",
                 IconId = "error",
                 ConsumableVariantName = "error",
-                Modifiers = ImmutableList.Create(new Modifier("error", 1, "", null)),
+                Modifiers = [new Modifier("error", 1, "", null)],
             };
         }
 
@@ -72,11 +72,11 @@ public partial class ConsumableDataContainer : DataContainerBase
         var consumableModifiers = consumable.Modifiers;
         var consumableState = new ConsumableState(name, consumable.NumConsumables, (decimal)consumable.ReloadTime, (decimal)consumable.WorkTime, iconName, localizationKey, consumableModifiers, (decimal)consumable.PreparationTime);
 
-        if (isCvPlanes && !consumableModifiers.Exists(x => x.Name.Equals("error", StringComparison.Ordinal)))
+        if (isCvPlanes && !consumableModifiers.Exists(x => x.Name.Equals("error", StringComparison.OrdinalIgnoreCase)))
         {
             consumableState = ProcessAircraftConsumable(consumableState, modifiers, consumable);
         }
-        else if (!consumableModifiers.Exists(x => x.Name.Equals("error", StringComparison.Ordinal)))
+        else if (!consumableModifiers.Exists(x => x.Name.Equals("error", StringComparison.OrdinalIgnoreCase)))
         {
             consumableState = ProcessShipConsumable(consumableState, modifiers, consumable, shipClass, shipHp);
         }
@@ -103,6 +103,7 @@ public partial class ConsumableDataContainer : DataContainerBase
 
     private static ConsumableState ProcessAircraftConsumable(ConsumableState consumableState, ImmutableList<Modifier> modifiers, Consumable consumable)
     {
+        var epsilonDistanceFromZero = 0.0001f;
         var (name, uses, cooldown, workTime, iconName, localizationKey, consumableModifiersTmp, _) = consumableState;
         var consumableModifiers = consumableModifiersTmp.ToList();
 
@@ -124,44 +125,44 @@ public partial class ConsumableDataContainer : DataContainerBase
             consumableModifiers.UpdateConsumableModifierValue(modifiers, "ConsumableDataContainer.TimeDelayAttack.PCY035", "timeDelayAttack");
             consumableModifiers.UpdateConsumableModifierValue(modifiers, "ConsumableDataContainer.TimeDelayAppear.PCY035", "timeFromHeaven");
 
-            var plane = AppData.FindAircraft(consumable.PlaneName[..consumable.PlaneName.IndexOf('_', StringComparison.Ordinal)]);
-            var oldCruisingSpeed = consumableModifiers.Find(x => x.Name.Equals("cruisingSpeed", StringComparison.Ordinal));
+            var plane = AppData.FindAircraft(consumable.PlaneName[..consumable.PlaneName.IndexOf('_', StringComparison.OrdinalIgnoreCase)]);
+            var oldCruisingSpeed = consumableModifiers.Find(x => x.Name.Equals("cruisingSpeed", StringComparison.OrdinalIgnoreCase));
             if (oldCruisingSpeed is not null)
             {
                 consumableModifiers.Remove(oldCruisingSpeed);
             }
 
-            consumableModifiers.Add(new("cruisingSpeed", plane.Speed, null, "ShipStats_CruisingSpeed", Unit.Knots, ImmutableHashSet<string>.Empty, DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
+            consumableModifiers.Add(new("cruisingSpeed", plane.Speed, null, "ShipStats_CruisingSpeed", Unit.Knots, [], DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
 
-            var oldConcealmentModifier = consumableModifiers.Find(x => x.Name.Equals("concealment", StringComparison.Ordinal));
+            var oldConcealmentModifier = consumableModifiers.Find(x => x.Name.Equals("concealment", StringComparison.OrdinalIgnoreCase));
             if (oldConcealmentModifier is not null)
             {
                 consumableModifiers.Remove(oldConcealmentModifier);
             }
 
-            consumableModifiers.Add(new("concealment", (float)plane.ConcealmentFromShips, null, "ShipStats_Concealment", Unit.Kilometers, ImmutableHashSet<string>.Empty, DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
+            consumableModifiers.Add(new("concealment", (float)plane.ConcealmentFromShips, null, "ShipStats_Concealment", Unit.Kilometers, [], DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
 
-            var fightersNum = consumableModifiers.First(x => x.Name.Equals("fightersNum", StringComparison.Ordinal)).Value;
-            var oldMaxKillModifier = consumableModifiers.Find(x => x.Name.Equals("maxKills", StringComparison.Ordinal));
+            var fightersNum = consumableModifiers.First(x => x.Name.Equals("fightersNum", StringComparison.OrdinalIgnoreCase)).Value;
+            var oldMaxKillModifier = consumableModifiers.Find(x => x.Name.Equals("maxKills", StringComparison.OrdinalIgnoreCase));
             if (oldMaxKillModifier is not null)
             {
                 consumableModifiers.Remove(oldMaxKillModifier);
             }
 
-            consumableModifiers.Add(new("maxKills", fightersNum, null, "ModifierConverter_MaxKillsAmount", Unit.None, ImmutableHashSet<string>.Empty, DisplayValueProcessingKind.ToInt, ValueProcessingKind.None));
+            consumableModifiers.Add(new("maxKills", fightersNum, null, "ModifierConverter_MaxKillsAmount", Unit.None, [], DisplayValueProcessingKind.ToInt, ValueProcessingKind.None));
 
             var baseMaxViewDistance = (decimal)plane.SpottingOnShips;
             var maxViewDistance = (float)modifiers.ApplyModifiers("ConsumableDataContainer.Interceptor", baseMaxViewDistance);
-            var maxViewDistanceModifier = consumableModifiers.Find(x => x.Name.Equals("maxViewDistance"));
+            var maxViewDistanceModifier = consumableModifiers.Find(x => x.Name.Equals("maxViewDistance", StringComparison.OrdinalIgnoreCase));
 
             if (maxViewDistanceModifier is not null)
             {
                 consumableModifiers.Remove(maxViewDistanceModifier);
             }
 
-            consumableModifiers.Add(new("maxViewDistance", maxViewDistance, "", "ShipStats_MaxViewDistance", Unit.Kilometers, ImmutableHashSet<string>.Empty, DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
+            consumableModifiers.Add(new("maxViewDistance", maxViewDistance, "", "ShipStats_MaxViewDistance", Unit.Kilometers, [], DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
 
-            if (maxViewDistance == 0)
+            if (Math.Abs(maxViewDistance) <= epsilonDistanceFromZero)
             {
                 iconName = $"{name}_Upgrade";
                 localizationKey = $"{consumable.Name}_Upgrade";
@@ -170,7 +171,7 @@ public partial class ConsumableDataContainer : DataContainerBase
             consumableModifiers.UpdateConsumableModifierValue(modifiers, "ConsumableDataContainer.Concealment.PCY035", "concealment");
         }
 
-        return consumableState with { Uses = uses, Cooldown = cooldown, WorkTime = workTime, IconName = iconName, LocalizationKey = localizationKey, ConsumableModifiers = consumableModifiers.ToImmutableList() };
+        return consumableState with { Uses = uses, Cooldown = cooldown, WorkTime = workTime, IconName = iconName, LocalizationKey = localizationKey, ConsumableModifiers = [.. consumableModifiers] };
     }
 
     private static ConsumableState ProcessShipConsumable(ConsumableState consumableState, ImmutableList<Modifier> modifiers, Consumable consumable, ShipClass shipClass, int shipHp)
@@ -192,16 +193,16 @@ public partial class ConsumableDataContainer : DataContainerBase
             // Repair party
             consumableModifiers.UpdateConsumableModifierValue(modifiers, "ConsumableDataContainer.RegenerationHpSpeed.PCY010", "consumable_regenerationHPSpeed");
 
-            var regenSpeed = consumableModifiers.First(x => x.Name.Equals("consumable_regenerationHPSpeed", StringComparison.Ordinal)).Value;
+            var regenSpeed = consumableModifiers.First(x => x.Name.Equals("consumable_regenerationHPSpeed", StringComparison.OrdinalIgnoreCase)).Value;
             var hpPerHeal = (float)Math.Round(workTime * (decimal)(regenSpeed * shipHp));
 
-            var oldModifier = consumableModifiers.Find(x => x.Name.Equals("hpPerHeal", StringComparison.Ordinal));
+            var oldModifier = consumableModifiers.Find(x => x.Name.Equals("hpPerHeal", StringComparison.OrdinalIgnoreCase));
             if (oldModifier is not null)
             {
                 consumableModifiers.Remove(oldModifier);
             }
 
-            consumableModifiers.Add(new("hpPerHeal", hpPerHeal, null, "Consumable_HpPerHeal", Unit.None, ImmutableHashSet<string>.Empty, DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
+            consumableModifiers.Add(new("hpPerHeal", hpPerHeal, null, "Consumable_HpPerHeal", Unit.None, [], DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
         }
         else if (name.Contains("PCY016", StringComparison.InvariantCultureIgnoreCase))
         {
@@ -219,43 +220,43 @@ public partial class ConsumableDataContainer : DataContainerBase
             cooldown = modifiers.ApplyModifiers($"ConsumableDataContainer.Reload.{consumable.Index}", cooldown);
 
             consumableModifiers.UpdateConsumableModifierValue(modifiers, $"ConsumableDataContainer.ExtraFighters.{consumable.Index}", "fightersNum");
-            var maxKills = consumableModifiers.First(x => x.Name.Equals("fightersNum", StringComparison.Ordinal)).Value;
+            var maxKills = consumableModifiers.First(x => x.Name.Equals("fightersNum", StringComparison.OrdinalIgnoreCase)).Value;
 
-            var plane = AppData.FindAircraft(consumable.PlaneName[..consumable.PlaneName.IndexOf('_', StringComparison.Ordinal)]);
+            var plane = AppData.FindAircraft(consumable.PlaneName[..consumable.PlaneName.IndexOf('_', StringComparison.OrdinalIgnoreCase)]);
 
-            var oldCruisingModifier = consumableModifiers.Find(x => x.Name.Equals("cruisingSpeed", StringComparison.Ordinal));
+            var oldCruisingModifier = consumableModifiers.Find(x => x.Name.Equals("cruisingSpeed", StringComparison.OrdinalIgnoreCase));
             if (oldCruisingModifier is not null)
             {
                 consumableModifiers.Remove(oldCruisingModifier);
             }
 
-            consumableModifiers.Add(new("cruisingSpeed", plane.Speed, null, "ShipStats_CruisingSpeed", Unit.Knots, ImmutableHashSet<string>.Empty, DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
+            consumableModifiers.Add(new("cruisingSpeed", plane.Speed, null, "ShipStats_CruisingSpeed", Unit.Knots, [], DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
 
-            var oldMaxViewModifier = consumableModifiers.Find(x => x.Name.Equals("maxViewDistance", StringComparison.Ordinal));
+            var oldMaxViewModifier = consumableModifiers.Find(x => x.Name.Equals("maxViewDistance", StringComparison.OrdinalIgnoreCase));
             if (oldMaxViewModifier is not null)
             {
                 consumableModifiers.Remove(oldMaxViewModifier);
             }
 
-            consumableModifiers.Add(new("maxViewDistance", (float)plane.SpottingOnShips, null, "ShipStats_MaxViewDistance", Unit.Kilometers, ImmutableHashSet<string>.Empty, DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
+            consumableModifiers.Add(new("maxViewDistance", (float)plane.SpottingOnShips, null, "ShipStats_MaxViewDistance", Unit.Kilometers, [], DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
 
-            var oldMaxKillsModifier = consumableModifiers.Find(x => x.Name.Equals("maxKills", StringComparison.Ordinal));
+            var oldMaxKillsModifier = consumableModifiers.Find(x => x.Name.Equals("maxKills", StringComparison.OrdinalIgnoreCase));
             if (oldMaxKillsModifier is not null)
             {
                 consumableModifiers.Remove(oldMaxKillsModifier);
             }
 
-            consumableModifiers.Add(new("maxKills", maxKills, null, "ModifierConverter_MaxKillsAmount", Unit.None, ImmutableHashSet<string>.Empty, DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
+            consumableModifiers.Add(new("maxKills", maxKills, null, "ModifierConverter_MaxKillsAmount", Unit.None, [], DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
 
             var concealment = (decimal)plane.ConcealmentFromShips;
             var planesConcealment = (float)modifiers.ApplyModifiers($"ConsumableDataContainer.Concealment.{consumable.Index}", concealment);
-            var oldConcealmentModifier = consumableModifiers.Find(x => x.Name.Equals("concealment", StringComparison.Ordinal));
+            var oldConcealmentModifier = consumableModifiers.Find(x => x.Name.Equals("concealment", StringComparison.OrdinalIgnoreCase));
             if (oldConcealmentModifier is not null)
             {
                 consumableModifiers.Remove(oldConcealmentModifier);
             }
 
-            consumableModifiers.Add(new("concealment", planesConcealment, null, "ShipStats_Concealment", Unit.Kilometers, ImmutableHashSet<string>.Empty, DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
+            consumableModifiers.Add(new("concealment", planesConcealment, null, "ShipStats_Concealment", Unit.Kilometers, [], DisplayValueProcessingKind.Raw, ValueProcessingKind.None));
         }
         else if (name.Contains("PCY045", StringComparison.InvariantCultureIgnoreCase))
         {
@@ -269,7 +270,7 @@ public partial class ConsumableDataContainer : DataContainerBase
             prepTime = modifiers.ApplyModifiers("ConsumableDataContainer.PrepTime.PCY048", prepTime);
         }
 
-        return consumableState with { Uses = uses, Cooldown = cooldown, WorkTime = workTime, IconName = iconName, LocalizationKey = localizationKey, ConsumableModifiers = consumableModifiers.ToImmutableList(), PrepTime = prepTime };
+        return consumableState with { Uses = uses, Cooldown = cooldown, WorkTime = workTime, IconName = iconName, LocalizationKey = localizationKey, ConsumableModifiers = [.. consumableModifiers], PrepTime = prepTime };
     }
 
     private readonly record struct ConsumableState(string Name, int Uses, decimal Cooldown, decimal WorkTime, string IconName, string LocalizationKey, ImmutableList<Modifier> ConsumableModifiers, decimal PrepTime);

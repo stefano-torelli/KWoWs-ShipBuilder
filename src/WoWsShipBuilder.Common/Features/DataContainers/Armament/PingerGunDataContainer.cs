@@ -57,13 +57,13 @@ public partial class PingerGunDataContainer : DataContainerBase
         }
 
         // Safe approach is necessary because data up until 0.11.9#1 does not include this data due to an issue in the data converter
-        if (pingerUpgrade.Components.TryGetValue(ComponentType.Sonar, out ImmutableArray<string> pingerGunInfo))
+        if (pingerUpgrade.Components.TryGetValue(ComponentType.Sonar, out var pingerGunInfo))
         {
             pingerGun = ship.PingerGunList[pingerGunInfo[0]];
         }
         else
         {
-            Logging.Logger.LogWarning("Unable to retrieve sonar component from upgrade info for ship {} and ship upgrade {}", ship.Index, pingerUpgrade.Name);
+            Logging.Logger.LogWarning("Unable to retrieve sonar component from upgrade info for ship {Index} and ship upgrade {Name}", ship.Index, pingerUpgrade.Name);
             pingerGun = ship.PingerGunList.First().Value;
         }
 

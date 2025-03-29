@@ -6,8 +6,6 @@ public class MetricsService
 {
     private static readonly double[] DefaultDurationBuckets = [.00125, .0025, .005, .01, .025, .05, .075, .1, .25, .5, .75, 1, 2.5, 5];
 
-    private readonly Meter meter;
-
     private readonly Counter<int> pageAccessCount;
 
     private readonly Counter<int> shipViewCount;
@@ -42,27 +40,27 @@ public class MetricsService
 
     public MetricsService(IMeterFactory meterFactory)
     {
-        this.meter = meterFactory.Create("Wowssb.Web");
-        this.pageAccessCount = this.meter.CreateCounter<int>("page.access.total", description: "Number of page accesses");
-        this.shipViewCount = this.meter.CreateCounter<int>("ship.views.total", description: "Number of ship views");
+        var meter = meterFactory.Create("Wowssb.Web");
+        this.pageAccessCount = meter.CreateCounter<int>("page.access.total", description: "Number of page accesses");
+        this.shipViewCount = meter.CreateCounter<int>("ship.views.total", description: "Number of ship views");
         var histogramAdvice = new InstrumentAdvice<double> { HistogramBucketBoundaries = DefaultDurationBuckets };
-        this.ComparisonLoadDuration = this.meter.CreateHistogram("comparison.load.duration.seconds", description: "Load duration for the ship comparison data grid in seconds", advice: histogramAdvice);
-        this.ShipViewModelInitDuration = this.meter.CreateHistogram("ship.vm.init.duration.seconds", description: "Init-time of the ship VM in seconds", advice: histogramAdvice);
-        this.ComparisonShipCount = this.meter.CreateHistogram<int>("comparison.ship.count", description: "Number of ships shown in the comparison", advice: new() { HistogramBucketBoundaries = Enumerable.Range(1, 15).Select(x => x * 50).ToList() });
-        this.refCount = this.meter.CreateCounter<int>("ship.page.refs.total", description: "Number of refs for ship page requests");
-        this.savedBuildOperations = this.meter.CreateCounter<int>("saved.build.operations.total", description: "Number of saved build operations");
-        this.buildImports = this.meter.CreateCounter<int>("build.imports.total", description: "Number of build imports");
-        this.sharedBuilds = this.meter.CreateCounter<int>("shared.builds.total", description: "Number of shared builds");
-        this.shipStatsActions = this.meter.CreateCounter<int>("ship.stats.header.actions.total", description: "Number of usage of the actions of the shipstats page (inline links, buttons)");
-        this.shipComparisonActions = this.meter.CreateCounter<int>("ship.comparison.actions.total", description: "Number of usage of the actions of the ship comparison page (inline links, buttons)");
-        this.ballisticChartsActions = this.meter.CreateCounter<int>("charts.actions.total", description: "Number of usage of the actions of the ballistic charts page (inline links, buttons)");
-        this.accelerationChartsActions = this.meter.CreateCounter<int>("acceleration.charts.actions.total", description: "Number of usage of the actions of the acceleration charts page (inline links, buttons)");
-        this.buildConfigurationDialogUsage = this.meter.CreateCounter<int>("build.configuration.dialog.usage.total", description: "Number of usage of the build configuration dialog");
-        this.customAccelerationDataUsage = this.meter.CreateCounter<int>("custom.acceleration.data.usage.total", description: "Number of usage of the custom acceleration data feature");
-        this.ballisticsChartsTabUsage = this.meter.CreateCounter<int>("charts.tab.usage.total", description: "Number of usage of each charts tab");
-        this.betaCodeActivation = this.meter.CreateCounter<int>("beta.code.activation.total", description: "Number of times a user activates a beta code");
-        this.captainSkillPopupUsage = this.meter.CreateCounter<int>("captain.skill.popup.usage.total", description: "Number of times a user opens the captain skill popup");
-        this.consumableActivations = this.meter.CreateCounter<int>("consumable.activations.total", description: "Number of times a user activates a consumable");
+        this.ComparisonLoadDuration = meter.CreateHistogram("comparison.load.duration.seconds", description: "Load duration for the ship comparison data grid in seconds", advice: histogramAdvice);
+        this.ShipViewModelInitDuration = meter.CreateHistogram("ship.vm.init.duration.seconds", description: "Init-time of the ship VM in seconds", advice: histogramAdvice);
+        this.ComparisonShipCount = meter.CreateHistogram<int>("comparison.ship.count", description: "Number of ships shown in the comparison", advice: new() { HistogramBucketBoundaries = [.. Enumerable.Range(1, 15).Select(x => x * 50)] });
+        this.refCount = meter.CreateCounter<int>("ship.page.refs.total", description: "Number of refs for ship page requests");
+        this.savedBuildOperations = meter.CreateCounter<int>("saved.build.operations.total", description: "Number of saved build operations");
+        this.buildImports = meter.CreateCounter<int>("build.imports.total", description: "Number of build imports");
+        this.sharedBuilds = meter.CreateCounter<int>("shared.builds.total", description: "Number of shared builds");
+        this.shipStatsActions = meter.CreateCounter<int>("ship.stats.header.actions.total", description: "Number of usage of the actions of the shipstats page (inline links, buttons)");
+        this.shipComparisonActions = meter.CreateCounter<int>("ship.comparison.actions.total", description: "Number of usage of the actions of the ship comparison page (inline links, buttons)");
+        this.ballisticChartsActions = meter.CreateCounter<int>("charts.actions.total", description: "Number of usage of the actions of the ballistic charts page (inline links, buttons)");
+        this.accelerationChartsActions = meter.CreateCounter<int>("acceleration.charts.actions.total", description: "Number of usage of the actions of the acceleration charts page (inline links, buttons)");
+        this.buildConfigurationDialogUsage = meter.CreateCounter<int>("build.configuration.dialog.usage.total", description: "Number of usage of the build configuration dialog");
+        this.customAccelerationDataUsage = meter.CreateCounter<int>("custom.acceleration.data.usage.total", description: "Number of usage of the custom acceleration data feature");
+        this.ballisticsChartsTabUsage = meter.CreateCounter<int>("charts.tab.usage.total", description: "Number of usage of each charts tab");
+        this.betaCodeActivation = meter.CreateCounter<int>("beta.code.activation.total", description: "Number of times a user activates a beta code");
+        this.captainSkillPopupUsage = meter.CreateCounter<int>("captain.skill.popup.usage.total", description: "Number of times a user opens the captain skill popup");
+        this.consumableActivations = meter.CreateCounter<int>("consumable.activations.total", description: "Number of times a user activates a consumable");
     }
 
     public Histogram<double> ComparisonLoadDuration { get; }

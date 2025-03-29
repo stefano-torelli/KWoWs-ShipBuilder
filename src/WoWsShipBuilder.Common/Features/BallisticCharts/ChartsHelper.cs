@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using DynamicData;
 using WoWsShipBuilder.DataStructures;
@@ -18,7 +18,9 @@ public static class ChartsHelper
     /// <returns>The horizontal dispersion series for the given parameter.</returns>
     public static IEnumerable<Point> CreateHorizontalDispersionChartDataset(Dispersion dispersion, double maxRange, double modifier)
     {
+#pragma warning disable IDE0047
         return CreateFunctionSeries(x => dispersion.CalculateHorizontalDispersion(x * 1000, modifier), 0, (maxRange * 1.5) / 1000, 0.1);
+#pragma warning restore IDE0047
     }
 
     /// <summary>
@@ -31,20 +33,23 @@ public static class ChartsHelper
     /// <returns>The vertical dispersion series for the given parameter.</returns>
     public static VerticalDispersions CreateVerticalDispersionSeries(Dispersion dispersion, double maxRange, Dictionary<double, Ballistic> impactAngles, double modifier)
     {
-        List<Point> series = CreateFunctionSeries(x => dispersion.CalculateDispersion(maxRange, modifier, x * 1000).Vertical, 0, (maxRange * 1.5) / 1000, 0.1).ToList();
+#pragma warning disable IDE0047
+        var series = CreateFunctionSeries(x => dispersion.CalculateDispersion(maxRange, modifier, x * 1000).Vertical, 0, (maxRange * 1.5) / 1000, 0.1).ToList();
 
-        List<Point> vertDispOnWater = new();
-        List<Point> vertDispOnPerpendicularToWater = new();
+        List<Point> vertDispOnWater = [];
+        List<Point> vertDispOnPerpendicularToWater = [];
 
-        foreach ((double range, var data) in impactAngles)
+        foreach ((var range, var data) in impactAngles)
         {
-            double disp = dispersion.CalculateDispersion(maxRange, modifier, range).Vertical;
+            var disp = dispersion.CalculateDispersion(maxRange, modifier, range).Vertical;
             vertDispOnWater.Add(new(range / 1000, disp / Math.Sin(Math.PI / 180 * data.ImpactAngle)));
             vertDispOnPerpendicularToWater.Add(new(range / 1000, disp / Math.Cos(Math.PI / 180 * data.ImpactAngle)));
         }
 
         vertDispOnWater.RemoveAt(0);
         return new(series, vertDispOnWater, vertDispOnPerpendicularToWater);
+
+#pragma warning restore IDE0047
     }
 
     /// <summary>
@@ -55,36 +60,28 @@ public static class ChartsHelper
     /// <param name="x1">The end x value.</param>
     /// <param name="dx">The increment in x.</param>
     /// <returns>A <see cref="List{Point}"/> of <see cref="Point"/>.</returns>
-    private static IEnumerable<Point> CreateFunctionSeries(Func<double, double> f, double x0, double x1, double dx)
+    private static List<Point> CreateFunctionSeries(Func<double, double> f, double x0, double x1, double dx)
     {
-        List<Point> dispSeries = new();
-        for (double x = x0; x <= x1 + (dx * 0.5); x += dx)
+#pragma warning disable IDE0047
+        List<Point> dispSeries = [];
+        for (var x = x0; x <= x1 + (dx * 0.5); x += dx)
         {
             dispSeries.Add(new(x, f(x)));
         }
 
         return dispSeries;
+#pragma warning restore IDE0047
     }
 
     public static IEnumerable<Point> SelectVerticalDispersionDataset(VerticalDispersions vertDispSeries, EllipsePlanes selectedVertDispPlane)
     {
-        IEnumerable<Point> verticalDispSeries;
-        switch (selectedVertDispPlane)
+        var verticalDispSeries = selectedVertDispPlane switch
         {
-            case EllipsePlanes.HorizontalPlane:
-                verticalDispSeries = vertDispSeries.VerticalDispersionOnWater;
-                break;
-            case EllipsePlanes.VerticalPlane:
-                verticalDispSeries = vertDispSeries.VerticalDispersionOnPerpendicularToWater;
-                break;
-            case EllipsePlanes.RealPlane:
-                verticalDispSeries = vertDispSeries.VerticalDispersionAtImpactAngle;
-                break;
-            default:
-                verticalDispSeries = vertDispSeries.VerticalDispersionAtImpactAngle;
-                break;
-        }
-
+            EllipsePlanes.HorizontalPlane => vertDispSeries.VerticalDispersionOnWater,
+            EllipsePlanes.VerticalPlane => vertDispSeries.VerticalDispersionOnPerpendicularToWater,
+            EllipsePlanes.RealPlane => vertDispSeries.VerticalDispersionAtImpactAngle,
+            _ => vertDispSeries.VerticalDispersionAtImpactAngle,
+        };
         return verticalDispSeries;
     }
 
@@ -94,18 +91,20 @@ public static class ChartsHelper
         {
             ballisticSeries.Where(x => x.Key / 1000 > range),
         };
+
         if (validData.Count == 0)
         {
             validData.Add(ballisticSeries.Last());
         }
 
-        IEnumerable<Point> trajectory = validData[0].Value.Coordinates.Select(x => new Point(x.X / 1000, x.Y));
+        var trajectory = validData[0].Value.Coordinates.Select(x => new Point(x.X / 1000, x.Y));
+
         return trajectory;
     }
 
     public static IEnumerable<Point> CreateBallisticChartDataset(Dictionary<double, Ballistic> data, BallisticParameter ballisticParameter)
     {
-        IEnumerable<Point> pointsList = ballisticParameter switch
+        var pointsList = ballisticParameter switch
         {
             BallisticParameter.Penetration => data.Select(x => new Point(x.Key / 1000, x.Value.Penetration)),
             BallisticParameter.ImpactVelocity => data.Select(x => new Point(x.Key / 1000, x.Value.Velocity)),
@@ -140,6 +139,8 @@ public static class ChartsHelper
         return impactAnglePath + verticalPath + horizontalPath;
     }
 
+#pragma warning disable IDE0079
     [SuppressMessage("Naming Rules", "SA1300", Justification = "Lowercase needed for chartjs to recognize to which axis the data belongs")]
     public sealed record Point(double x, double y);
+#pragma warning restore IDE0079
 }

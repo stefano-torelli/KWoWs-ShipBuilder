@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -8,7 +8,7 @@ using WoWsShipBuilder.Infrastructure.Metrics;
 
 namespace WoWsShipBuilder.Features.Navigation;
 
-public class AppNavigator
+public class AppNavigator(SessionStateCache sessionStateCache, NavigationManager navManager, MetricsService metricsService, ISnackbar snackbar, ILocalizer localizer)
 {
     private const int TransferLimit = 250;
 
@@ -22,20 +22,11 @@ public class AppNavigator
     private const string AccelerationChartsMetricLabel = "open-acceleration-charts";
     private const string ShipComparisonMetricLabel = "open-ship-comparison";
 
-    private readonly SessionStateCache sessionStateCache;
-    private readonly NavigationManager navManager;
-    private readonly MetricsService metricsService;
-    private readonly ISnackbar snackbar;
-    private readonly ILocalizer localizer;
-
-    public AppNavigator(SessionStateCache sessionStateCache, NavigationManager navManager, MetricsService metricsService, ISnackbar snackbar, ILocalizer localizer)
-    {
-        this.sessionStateCache = sessionStateCache;
-        this.navManager = navManager;
-        this.metricsService = metricsService;
-        this.snackbar = snackbar;
-        this.localizer = localizer;
-    }
+    private readonly SessionStateCache sessionStateCache = sessionStateCache;
+    private readonly NavigationManager navManager = navManager;
+    private readonly MetricsService metricsService = metricsService;
+    private readonly ISnackbar snackbar = snackbar;
+    private readonly ILocalizer localizer = localizer;
 
     public enum AppPage
     {
@@ -51,7 +42,7 @@ public class AppNavigator
     /// <param name="destinationPage">The page to navigate to.</param>
     /// <param name="containerList">The list of ship build containers to carry over.</param>
     /// <param name="leavingPage">Optional. The page the user is leaving. Only needed for metrics.</param>
-    public void NavigateTo(AppPage destinationPage, IEnumerable<ShipBuildContainer> containerList, AppPage? leavingPage = null) => this.GoToPage(destinationPage, containerList.ToImmutableList(), null, leavingPage);
+    public void NavigateTo(AppPage destinationPage, IEnumerable<ShipBuildContainer> containerList, AppPage? leavingPage = null) => this.GoToPage(destinationPage, [.. containerList], null, leavingPage);
 
     /// <summary>
     /// Navigates to the specified destination page.
@@ -59,7 +50,7 @@ public class AppNavigator
     /// <param name="destinationPage">The destination page to navigate to.</param>
     /// <param name="container">The ship build container to carry over.</param>
     /// <param name="leavingPage">Optional. The page the user is leaving. Only needed for metrics.</param>
-    public void NavigateTo(AppPage destinationPage, ShipBuildContainer container, AppPage? leavingPage = null) => this.GoToPage(destinationPage, ImmutableList.Create(container), null, leavingPage);
+    public void NavigateTo(AppPage destinationPage, ShipBuildContainer container, AppPage? leavingPage = null) => this.GoToPage(destinationPage, [container], null, leavingPage);
 
     /// <summary>
     /// Navigates to the specified destination page. Carrying over also the selected shell index.
@@ -68,7 +59,7 @@ public class AppNavigator
     /// <param name="container">The ship build container to carry over.</param>
     /// <param name="shellIndex">The shell index. Only needed when navigating to the ballistic charts.</param>
     /// <param name="leavingPage">Optional. The page the user is leaving. Only needed for metrics.</param>
-    public void NavigateTo(AppPage destinationPage, ShipBuildContainer container, string shellIndex, AppPage? leavingPage = null) => this.GoToPage(destinationPage, ImmutableList.Create(container), shellIndex, leavingPage);
+    public void NavigateTo(AppPage destinationPage, ShipBuildContainer container, string shellIndex, AppPage? leavingPage = null) => this.GoToPage(destinationPage, [container], shellIndex, leavingPage);
 
     private static string GenerateDestinationUrl(AppPage destinationPage, IEnumerable<ShipBuildContainer> containerList, string? shellIndex)
     {
@@ -85,7 +76,7 @@ public class AppNavigator
 
     private void GoToPage(AppPage destinationPage, ImmutableList<ShipBuildContainer> containerList, string? shellIndex, AppPage? leavingPage)
     {
-        int selectionCount = containerList.Count;
+        var selectionCount = containerList.Count;
         switch (selectionCount)
         {
             case > TransferLimit:
@@ -106,7 +97,7 @@ public class AppNavigator
 
     private void LogMetrics(AppPage destinationPage, AppPage? leavingPage)
     {
-        string metricLabel = destinationPage switch
+        var metricLabel = destinationPage switch
         {
             AppPage.ShipStats => ShipStatsMetricLabel,
             AppPage.BallisticCharts => BallisticChartsMetricLabel,

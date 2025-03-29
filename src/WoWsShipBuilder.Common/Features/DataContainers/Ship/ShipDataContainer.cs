@@ -32,7 +32,7 @@ public class ShipDataContainer(string index)
 
     public AntiAirDataContainer? AntiAirDataContainer { get; set; }
 
-    public ImmutableList<object> SecondColumnContent { get; set; } = ImmutableList<object>.Empty;
+    public ImmutableList<object> SecondColumnContent { get; set; } = [];
 
     public SpecialAbilityDataContainer? SpecialAbilityDataContainer { get; set; }
 
@@ -75,7 +75,7 @@ public class ShipDataContainer(string index)
             secondColumnContent.Insert(0, shipDataContainer.SecondaryBatteryUiDataContainer);
         }
 
-        shipDataContainer.SecondColumnContent = secondColumnContent.ToImmutableList();
+        shipDataContainer.SecondColumnContent = [.. secondColumnContent];
 
         return shipDataContainer;
     }

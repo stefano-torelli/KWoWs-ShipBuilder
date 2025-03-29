@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace WoWsShipBuilder.DataElements;
 
 public abstract class DataContainerBase
 {
-    public List<IDataElement> DataElements { get; } = new();
+    public List<IDataElement> DataElements { get; } = [];
 
     protected static bool ShouldAdd(object? value)
     {

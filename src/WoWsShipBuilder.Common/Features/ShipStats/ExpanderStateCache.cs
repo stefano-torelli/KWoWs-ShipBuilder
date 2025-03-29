@@ -1,18 +1,13 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using WoWsShipBuilder.Features.Settings;
 
 namespace WoWsShipBuilder.Features.ShipStats;
 
-public sealed class ExpanderStateCache
+public sealed class ExpanderStateCache(AppSettings appSettings)
 {
-    private readonly AppSettings appSettings;
+    private readonly AppSettings appSettings = appSettings;
 
     private readonly ConcurrentDictionary<string, bool> expanderStates = new();
-
-    public ExpanderStateCache(AppSettings appSettings)
-    {
-        this.appSettings = appSettings;
-    }
 
     public bool this[string key]
     {
@@ -24,17 +19,17 @@ public sealed class ExpanderStateCache
 
     private bool ComputeInitialState(string key)
     {
-        if (key.StartsWith("main", StringComparison.Ordinal))
+        if (key.StartsWith("main", StringComparison.OrdinalIgnoreCase))
         {
             return this.appSettings.OpenAllMainExpandersByDefault;
         }
 
-        if (key.StartsWith("ammo", StringComparison.Ordinal))
+        if (key.StartsWith("ammo", StringComparison.OrdinalIgnoreCase))
         {
             return this.appSettings.OpenAllAmmoExpandersByDefault;
         }
 
-        if (key.StartsWith("sec", StringComparison.Ordinal))
+        if (key.StartsWith("sec", StringComparison.OrdinalIgnoreCase))
         {
             return this.appSettings.OpenSecondariesAndAaExpandersByDefault;
         }

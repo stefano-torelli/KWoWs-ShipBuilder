@@ -1,19 +1,14 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 using WoWsShipBuilder.Features.BallisticCharts.Data;
 
 namespace WoWsShipBuilder.Features.BallisticCharts;
 
-public sealed class ChartJsInterop : IAsyncDisposable
+public sealed class ChartJsInterop(IJSRuntime runtime) : IAsyncDisposable
 {
-    private readonly IJSRuntime runtime;
+    private readonly IJSRuntime runtime = runtime;
 
     private IJSObjectReference? module;
-
-    public ChartJsInterop(IJSRuntime runtime)
-    {
-        this.runtime = runtime;
-    }
 
     public async Task SetupGlobalChartConfigAsync(double aspectRatio)
     {

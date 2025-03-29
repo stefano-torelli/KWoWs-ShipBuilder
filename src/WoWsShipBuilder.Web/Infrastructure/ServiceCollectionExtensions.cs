@@ -1,14 +1,15 @@
-﻿using OpenTelemetry.Metrics;
+using OpenTelemetry.Metrics;
 using WoWsShipBuilder.Infrastructure.ApplicationData;
 using WoWsShipBuilder.Infrastructure.HttpClients;
 using WoWsShipBuilder.Infrastructure.Utility;
 using WoWsShipBuilder.Web.Features.Authentication;
 using WoWsShipBuilder.Web.Features.BetaAccess;
 using WoWsShipBuilder.Web.Infrastructure.Data;
+using WoWsShipBuilder.Infrastructure.DataTransfer;
 
 namespace WoWsShipBuilder.Web.Infrastructure;
 
-using WoWsShipBuilder.Infrastructure.DataTransfer;
+
 
 public static class ServiceCollectionExtensions
 {

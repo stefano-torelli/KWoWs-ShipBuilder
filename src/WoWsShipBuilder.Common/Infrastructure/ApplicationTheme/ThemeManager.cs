@@ -1,4 +1,4 @@
-﻿using MudBlazor;
+using MudBlazor;
 using WoWsShipBuilder.Features.Settings;
 using WoWsShipBuilder.Infrastructure.Utility;
 
@@ -32,12 +32,7 @@ public class ThemeManager
 
     public MudTheme AppTheme { get; private set; }
 
-    private MudTheme GetAppTheme()
-    {
-        return Helpers.IsAprilFool() ? this.CreateAprilFoolTheme() : this.CreateTheme();
-    }
-
-    private MudTheme CreateAprilFoolTheme()
+    private static MudTheme CreateAprilFoolTheme()
     {
         return new()
         {
@@ -126,6 +121,11 @@ public class ThemeManager
                 Tooltip = 4000,
             },
         };
+    }
+
+    private MudTheme GetAppTheme()
+    {
+        return Helpers.IsAprilFool() ? CreateAprilFoolTheme() : this.CreateTheme();
     }
 
     private MudTheme CreateTheme()

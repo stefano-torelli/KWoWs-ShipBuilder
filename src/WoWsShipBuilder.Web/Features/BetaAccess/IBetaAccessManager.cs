@@ -1,8 +1,8 @@
-﻿namespace WoWsShipBuilder.Web.Features.BetaAccess;
+namespace WoWsShipBuilder.Web.Features.BetaAccess;
 
 public interface IBetaAccessManager
 {
-    public IEnumerable<BetaAccessEntry> ActiveBetas { get; }
+    IEnumerable<BetaAccessEntry> ActiveBetas { get; }
 
     BetaAccessEntry? FindBetaByCode(string code);
 

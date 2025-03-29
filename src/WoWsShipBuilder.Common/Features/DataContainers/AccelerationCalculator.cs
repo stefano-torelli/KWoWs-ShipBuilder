@@ -1,4 +1,4 @@
-﻿using WoWsShipBuilder.DataStructures;
+using WoWsShipBuilder.DataStructures;
 using WoWsShipBuilder.DataStructures.Ship;
 using WoWsShipBuilder.Infrastructure.ApplicationData;
 
@@ -55,6 +55,7 @@ public static class AccelerationCalculator
         AccelerationModifiers accelerationModifiers,
         SpeedBoostAccelerationModifiers speedBoostModifiers)
     {
+#pragma warning disable IDE0047 // Remove unnecessary parentheses
         // check that only valid values are contained in throttleList
         if (initialThrottleList.Exists(throttle => throttle is > 4 or < -1))
         {
@@ -62,7 +63,7 @@ public static class AccelerationCalculator
         }
 
         var throttleList = new List<int>();
-        foreach (int element in initialThrottleList.Where(element => throttleList.Count == 0 || throttleList[^1] != element))
+        foreach (var element in initialThrottleList.Where(element => throttleList.Count == 0 || throttleList[^1] != element))
         {
             throttleList.Add(element);
         }
@@ -73,7 +74,7 @@ public static class AccelerationCalculator
         // get starting stats
         var baseShipSpeed = decimal.ToDouble((1 + engine.SpeedCoef) * hull.MaxSpeed);
         var horsepower = decimal.ToDouble(hull.EnginePower);
-        int tonnage = hull.Tonnage;
+        var tonnage = hull.Tonnage;
         var fullPowerForwardTime = decimal.ToDouble(engine.ForwardEngineUpTime);
         var fullPowerBackwardTime = decimal.ToDouble(engine.BackwardEngineUpTime);
         var timeConstant = decimal.ToDouble(Constants.TimeScale);
@@ -93,11 +94,11 @@ public static class AccelerationCalculator
         var timeForward = (fullPowerForwardTime / timeConstant) * accelerationModifiers.EngineForwardUpTimeModifiers;
         var timeBackward = (fullPowerBackwardTime / timeConstant) * accelerationModifiers.EngineBackwardUpTimeModifiers;
 
-        var forsageForward = speedBoostModifiers.ForwardEngineForsagOverride == 0 ? forwardEngineForsag * accelerationModifiers.EngineForwardForsagePowerModifier : speedBoostModifiers.ForwardEngineForsagOverride;
-        var forsageBackwards = speedBoostModifiers.BackwardEngineForsagOverride == 0 ? backwardEngineForsag * accelerationModifiers.EngineBackwardForsagePowerModifier : speedBoostModifiers.BackwardEngineForsagOverride;
+        var forsageForward = Math.Abs(speedBoostModifiers.ForwardEngineForsagOverride) <= Constants.EpsilonNearToZero ? forwardEngineForsag * accelerationModifiers.EngineForwardForsagePowerModifier : speedBoostModifiers.ForwardEngineForsagOverride;
+        var forsageBackwards = Math.Abs(speedBoostModifiers.BackwardEngineForsagOverride) <= Constants.EpsilonNearToZero ? backwardEngineForsag * accelerationModifiers.EngineBackwardForsagePowerModifier : speedBoostModifiers.BackwardEngineForsagOverride;
 
-        var forsageForwardMaxSpeed = speedBoostModifiers.SpeedBoostEngineForwardForsageMaxSpeedOverride == 0 ? forwardEngineForsagMaxSpeed * accelerationModifiers.EngineForwardForsageMaxSpeedModifier : speedBoostModifiers.SpeedBoostEngineForwardForsageMaxSpeedOverride;
-        var forsageBackwardsMaxSpeed = speedBoostModifiers.SpeedBoostEngineBackwardEngineForsagOverride == 0 ? backwardEngineForsagMaxSpeed * accelerationModifiers.EngineBackwardForsageMaxSpeedModifier : speedBoostModifiers.SpeedBoostEngineBackwardEngineForsagOverride;
+        var forsageForwardMaxSpeed = Math.Abs(speedBoostModifiers.SpeedBoostEngineForwardForsageMaxSpeedOverride) <= Constants.EpsilonNearToZero ? forwardEngineForsagMaxSpeed * accelerationModifiers.EngineForwardForsageMaxSpeedModifier : speedBoostModifiers.SpeedBoostEngineForwardForsageMaxSpeedOverride;
+        var forsageBackwardsMaxSpeed = Math.Abs(speedBoostModifiers.SpeedBoostEngineBackwardEngineForsagOverride) <= Constants.EpsilonNearToZero ? backwardEngineForsagMaxSpeed * accelerationModifiers.EngineBackwardForsageMaxSpeedModifier : speedBoostModifiers.SpeedBoostEngineBackwardEngineForsagOverride;
 
         var powerIncreaseForward = Dt * maxPowerForward / timeForward;
         var powerIncreaseBackward = Dt * maxPowerBackwards / timeBackward;
@@ -106,12 +107,12 @@ public static class AccelerationCalculator
 
         // calculate initial stats
         // throttle goes from -1 to 4, depending on the gear.
-        int oldThrottle = throttleList[0];
+        var oldThrottle = throttleList[0];
 
         // initial speed is equal to the speed limit
-        double speed = GetSpeedLimit(oldThrottle, maxForwardSpeed, maxReverseSpeed);
-        double power = GetPowerFromThrottle(oldThrottle, maxPowerForward, maxPowerBackwards);
-        double time = 0;
+        var speed = GetSpeedLimit(oldThrottle, maxForwardSpeed, maxReverseSpeed);
+        var power = GetPowerFromThrottle(oldThrottle, maxPowerForward, maxPowerBackwards);
+        var time = 0.0;
         var isDown = 0;
 
         result.Add(new(speed, time));
@@ -121,7 +122,7 @@ public static class AccelerationCalculator
             foreach (var throttle in throttleList.Skip(1))
             {
                 // get new throttle speedLimit
-                double speedLimit = GetSpeedLimit(throttle, maxForwardSpeed, maxReverseSpeed);
+                var speedLimit = GetSpeedLimit(throttle, maxForwardSpeed, maxReverseSpeed);
 
                 if (throttle < oldThrottle && throttle > 0)
                 {
@@ -155,6 +156,7 @@ public static class AccelerationCalculator
         }
 
         return new(timeForGear, result);
+#pragma warning restore IDE0047 // Remove unnecessary parentheses
     }
 
     /// <summary>
@@ -166,12 +168,9 @@ public static class AccelerationCalculator
     /// <returns>The value of the ratio.</returns>
     private static int GetPfToPbRatio(ShipClass shipClass, string shipIndex)
     {
-        if (shipIndex.Equals(CaraccioloId, StringComparison.Ordinal))
-        {
-            return 3;
-        }
-
-        return shipClass switch
+        return shipIndex.Equals(CaraccioloId, StringComparison.OrdinalIgnoreCase)
+            ? 3
+            : shipClass switch
         {
             ShipClass.Battleship => 4,
             ShipClass.Cruiser => 3,
@@ -192,8 +191,9 @@ public static class AccelerationCalculator
     /// <returns>The value of the drag.</returns>
     private static double GetDrag(double speed, double maxForwardSpeed, double maxPowerForward, double maxReverseSpeed, double maxPowerBackwards)
     {
-        // drag=@(x) (-x.*abs(x)/(Vmax)^2*PF).*(x>0) + (-x.*abs(x)/(Vmin)^2*PB).*(x<0);
-        // first part if x > 0, second if x < 0
+#pragma warning disable IDE0047 // Remove unnecessary parentheses
+        /// drag=@(x) (-x.*abs(x)/(Vmax)^2*PF).*(x>0) + (-x.*abs(x)/(Vmin)^2*PB).*(x<0);
+        /// first part if x > 0, second if x < 0
         double drag;
         if (speed > 0)
         {
@@ -205,6 +205,7 @@ public static class AccelerationCalculator
         }
 
         return drag;
+#pragma warning restore IDE0047 // Remove unnecessary parentheses
     }
 
     /// <summary>
@@ -216,8 +217,8 @@ public static class AccelerationCalculator
     /// <returns>The speed limit.</returns>
     private static double GetSpeedLimit(double throttle, double maxForwardSpeed, double maxReverseSpeed)
     {
-        // speed_limit=@(x) x/4*Vmax*(x>=0)-Vmin*(x<0);
-        // first part if x > 0, second if x < 0
+        /// speed_limit=@(x) x/4*Vmax*(x>=0)-Vmin*(x<0);
+        /// first part if x > 0, second if x < 0
         double speedLimit;
         if (throttle >= 0)
         {
@@ -269,7 +270,7 @@ public static class AccelerationCalculator
     /// <param name="forsageBackwardsMaxSpeed">Maximum forsage speed backwards.</param>
     /// <param name="forsageBackwards">Forsage backwards.</param>
     private static bool GenerateAccelerationPoints(
-        ICollection<AccelerationPoints> pointList,
+        List<AccelerationPoints> pointList,
         double throttle,
         double isReversingDirection,
         ref double time,
@@ -287,6 +288,7 @@ public static class AccelerationCalculator
         double forsageBackwardsMaxSpeed,
         double forsageBackwards)
     {
+#pragma warning disable IDE0047 // Remove unnecessary parentheses
         var shouldContinue = true;
         var acc = 0;
         if (speedLimit > speed)
@@ -301,7 +303,7 @@ public static class AccelerationCalculator
         }
         else
         {
-            // power=PF*(throttle(i)/4)^2*(V(i-1)>0)+(-PB)*(V(i-1)<0);
+            /// power=PF*(throttle(i)/4)^2*(V(i-1)>0)+(-PB)*(V(i-1)<0);
             if (speed >= 0)
             {
                 power = maxPowerForward * Math.Pow(throttle / 4, 2);
@@ -312,8 +314,8 @@ public static class AccelerationCalculator
             }
         }
 
-        double drag = GetDrag(speed, maxForwardSpeed, maxPowerForward, maxReverseSpeed, maxPowerBackwards);
-        double acceleration = (power + drag) * Math.Abs(acc);
+        var drag = GetDrag(speed, maxForwardSpeed, maxPowerForward, maxReverseSpeed, maxPowerBackwards);
+        var acceleration = (power + drag) * Math.Abs(acc);
 
         // forsage part
         if (speed < forsageForwardMaxSpeed && speed >= 0 && power > 0)
@@ -343,6 +345,7 @@ public static class AccelerationCalculator
         time += Dt;
         pointList.Add(new (speed, time));
         return shouldContinue;
+#pragma warning restore IDE0047 // Remove unnecessary parentheses
     }
 
     /// <summary>

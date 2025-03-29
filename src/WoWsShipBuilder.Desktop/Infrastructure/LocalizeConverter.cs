@@ -36,15 +36,15 @@ public class LocalizeConverter : IValueConverter
         {
             if (parameter is not string stringParam)
             {
-                string localization = localizer.GetGameLocalization(localizerKey).Localization.Trim();
+                var localization = localizer.GetGameLocalization(localizerKey).Localization.Trim();
                 return !string.IsNullOrEmpty(localization) ? localization : "noName";
             }
 
-            if (stringParam.Equals("RESX", StringComparison.InvariantCultureIgnoreCase))
+            if (stringParam.Equals("RESX", StringComparison.OrdinalIgnoreCase))
             {
-                string? localization = Translation.ResourceManager.GetString(localizerKey, culture);
+                var localization = Translation.ResourceManager.GetString(localizerKey, culture);
 
-                // TODO: fix properly by handling Unit property in TooltipDataElement generation
+                // Fix properly by handling Unit property in TooltipDataElement generation
                 if (localization == null && !string.IsNullOrWhiteSpace(localizerKey))
                 {
                     Logging.Logger.LogWarning("Missing localization for key {LocalizerKey}", localizerKey);
@@ -59,7 +59,7 @@ public class LocalizeConverter : IValueConverter
                 return Translation.ResourceManager.GetString($"{stringParam}_{localizerKey}", culture) ?? string.Empty;
             }
 
-            if (stringParam.Equals("SKILL") || stringParam.Equals("SKILL_DESC"))
+            if (stringParam.Equals("SKILL", StringComparison.OrdinalIgnoreCase) || stringParam.Equals("SKILL_DESC", StringComparison.OrdinalIgnoreCase))
             {
                 localizerKey = ToSnakeCase(localizerKey);
             }
@@ -109,7 +109,7 @@ public class LocalizeConverter : IValueConverter
         sb.Append(char.ToLowerInvariant(camelCaseString[0]));
         for (var i = 1; i < camelCaseString.Length; ++i)
         {
-            char c = camelCaseString[i];
+            var c = camelCaseString[i];
             if (char.IsUpper(c))
             {
                 sb.Append('_');

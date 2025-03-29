@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using ReactiveUI;
 using WoWsShipBuilder.DataStructures.Modifiers;
 using WoWsShipBuilder.DataStructures.Ship;
@@ -49,7 +49,7 @@ public partial class ShipBuildViewModel : ReactiveObject
             CaptainSkillSelectorViewModel = new(ship.ShipClass, CaptainSkillSelectorViewModel.LoadParams(ship.ShipNation)),
             ShipModuleViewModel = new(ship.ShipUpgradeInfo),
             UpgradePanelViewModel = new(ship, AppData.ModernizationCache),
-            ConsumableViewModel = ConsumableViewModel.Create(ship, new List<string>(), Logging.LoggerFactory),
+            ConsumableViewModel = ConsumableViewModel.Create(ship, [], Logging.LoggerFactory),
             SpecialAbilityActive = shipBuildContainer.SpecialAbilityActive,
         };
 
@@ -69,7 +69,7 @@ public partial class ShipBuildViewModel : ReactiveObject
 
     private Build? DumpToBuild()
     {
-        bool isCustomBuild = !string.IsNullOrWhiteSpace(this.BuildName) || this.ShipModuleViewModel.SelectedModules.Any(m => !string.IsNullOrEmpty(m.Prev)) || this.UpgradePanelViewModel.SelectedModernizationList.Any() || this.ConsumableViewModel.ActivatedSlots.Any() || this.CaptainSkillSelectorViewModel.SkillOrderList.Any() || this.SignalSelectorViewModel.SelectedSignals.Any();
+        var isCustomBuild = !string.IsNullOrWhiteSpace(this.BuildName) || this.ShipModuleViewModel.SelectedModules.Any(m => !string.IsNullOrEmpty(m.Prev)) || this.UpgradePanelViewModel.SelectedModernizationList.Any() || this.ConsumableViewModel.ActivatedSlots.Any() || this.CaptainSkillSelectorViewModel.SkillOrderList.Any() || this.SignalSelectorViewModel.SelectedSignals.Any();
         if (isCustomBuild)
         {
             return new(this.BuildName.Trim(), this.CurrentShip.Index, this.CurrentShip.ShipNation, this.ShipModuleViewModel.SaveBuild(), this.UpgradePanelViewModel.SaveBuild(), this.ConsumableViewModel.SaveBuild(), this.CaptainSkillSelectorViewModel.GetCaptainIndex(), this.CaptainSkillSelectorViewModel.GetSkillNumberList(), this.SignalSelectorViewModel.GetFlagList());
@@ -81,8 +81,8 @@ public partial class ShipBuildViewModel : ReactiveObject
     public ShipBuildContainer CreateShipBuildContainer(ShipBuildContainer baseContainer)
     {
         var build = this.DumpToBuild();
-        var activatedConsumables = this.ConsumableViewModel.ActivatedSlots.Any() ? this.ConsumableViewModel.ActivatedSlots.ToImmutableArray() : ImmutableArray<int>.Empty;
-        ImmutableList<Modifier> modifiers = this.GenerateModifierList();
+        var activatedConsumables = this.ConsumableViewModel.ActivatedSlots.Any() ? [.. this.ConsumableViewModel.ActivatedSlots] : ImmutableArray<int>.Empty;
+        var modifiers = this.GenerateModifierList();
         return baseContainer with
         {
             Build = build,
@@ -95,17 +95,16 @@ public partial class ShipBuildViewModel : ReactiveObject
 
     private ShipDataContainer CreateDataContainer(ImmutableList<Modifier> modifiers)
     {
-        return ShipDataContainer.CreateFromShip(this.CurrentShip, this.ShipModuleViewModel.SelectedModules.ToImmutableList(), modifiers);
+        return ShipDataContainer.CreateFromShip(this.CurrentShip, [.. this.ShipModuleViewModel.SelectedModules], modifiers);
     }
 
     private ImmutableList<Modifier> GenerateModifierList()
     {
-        var modifiers = new List<Modifier>();
-
-        modifiers.AddRange(this.UpgradePanelViewModel.GetModifierList());
+        var modifiers = new List<Modifier>(this.UpgradePanelViewModel.GetModifierList());
         modifiers.AddRange(this.SignalSelectorViewModel.GetModifierList());
         modifiers.AddRange(this.CaptainSkillSelectorViewModel.GetModifiersList());
         modifiers.AddRange(this.ConsumableViewModel.GetModifiersList());
-        return modifiers.ToImmutableList();
+
+        return [.. modifiers];
     }
 }

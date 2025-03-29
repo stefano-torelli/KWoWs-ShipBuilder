@@ -1,9 +1,7 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-
-#pragma warning disable CS0809
 
 namespace WoWsShipBuilder.Data.Generator.Utilities;
 
@@ -38,13 +36,12 @@ internal struct HashCode
     /// Gets the resulting hashcode from the current instance.
     /// </summary>
     /// <returns>The resulting hashcode from the current instance.</returns>
-    public int ToHashCode()
+    public readonly int ToHashCode()
     {
-        uint length = this.length;
-        uint position = length % 4;
-        uint hash = length < 4 ? MixEmptyState() : MixState(this.v1, this.v2, this.v3, this.v4);
+        var position = this.length % 4;
+        var hash = this.length < 4 ? MixEmptyState() : MixState(this.v1, this.v2, this.v3, this.v4);
 
-        hash += length * 4;
+        hash += this.length * 4;
 
         if (position > 0)
         {
@@ -66,16 +63,6 @@ internal struct HashCode
         return (int)hash;
     }
 
-    /// <inheritdoc/>
-    [Obsolete("HashCode is a mutable struct and should not be compared with other HashCodes. Use ToHashCode to retrieve the computed hash code.", error: true)]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public override int GetHashCode() => throw new NotSupportedException();
-
-    /// <inheritdoc/>
-    [Obsolete("HashCode is a mutable struct and should not be compared with other HashCodes.", error: true)]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public override bool Equals(object? obj) => throw new NotSupportedException();
-
     private static uint GenerateGlobalSeed()
     {
         var bytes = new byte[4];
@@ -95,6 +82,8 @@ internal struct HashCode
         v3 = Seed;
         v4 = Seed - Prime1;
     }
+
+#pragma warning disable IDE0047 // Remove unnecessary parentheses
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint Round(uint hash, uint input)
@@ -134,9 +123,9 @@ internal struct HashCode
 
     private void Add(int value)
     {
-        uint val = (uint)value;
-        uint previousLength = this.length++;
-        uint position = previousLength % 4;
+        var val = (uint)value;
+        var previousLength = this.length++;
+        var position = previousLength % 4;
 
         if (position == 0)
         {
@@ -177,4 +166,6 @@ internal struct HashCode
     {
         return (value << offset) | (value >> (32 - offset));
     }
+
+#pragma warning restore IDE0047 // Remove unnecessary parentheses
 }

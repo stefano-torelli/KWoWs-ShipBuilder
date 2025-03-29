@@ -1,4 +1,4 @@
-﻿using WoWsShipBuilder.DataStructures.Ship;
+using WoWsShipBuilder.DataStructures.Ship;
 using WoWsShipBuilder.Features.DataContainers;
 
 namespace WoWsShipBuilder.Features.ShipComparison.GridData;
@@ -17,8 +17,8 @@ public class SecondaryGridDataWrapper
         this.Dpm = secondaryBattery.Select(x => x.TheoreticalDpm).ToNoSortList();
         this.Fpm = secondaryBattery.Select(x => x.PotentialFpm).ToNoSortList();
         this.Sigma = secondaryBattery.Select(x => x.Sigma).FirstOrDefault();
-        this.DispersionData = secondaryBattery.Select(x => x.DispersionData).ToList();
-        this.DispersionModifier = secondaryBattery.Select(x => x.DispersionModifier).ToList();
+        this.DispersionData = [.. secondaryBattery.Select(x => x.DispersionData)];
+        this.DispersionModifier = [.. secondaryBattery.Select(x => x.DispersionModifier)];
 
         // Secondary shells
         var secondaryShellData = secondaryBattery.Select(x => x.Shell).ToList();

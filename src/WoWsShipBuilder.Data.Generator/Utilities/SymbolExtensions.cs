@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -11,7 +11,7 @@ internal static class SymbolExtensions
 
     public static AttributeData? FindAttributeOrDefault(this ISymbol symbol, string fullAttributeName)
     {
-        return symbol.GetAttributes().FirstOrDefault(attribute => attribute.AttributeClass?.ToDisplayString(FullyQualifiedWithoutGlobalFormat).Equals(fullAttributeName, StringComparison.Ordinal) == true);
+        return symbol.GetAttributes().FirstOrDefault(attribute => attribute.AttributeClass?.ToDisplayString(FullyQualifiedWithoutGlobalFormat).Equals(fullAttributeName, StringComparison.OrdinalIgnoreCase) == true);
     }
 
     public static AttributeData FindAttribute(this ISymbol symbol, string fullAttributeName)

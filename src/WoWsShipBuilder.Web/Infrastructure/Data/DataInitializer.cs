@@ -1,28 +1,17 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using WoWsShipBuilder.Infrastructure.ApplicationData;
 using WoWsShipBuilder.Infrastructure.Localization;
 
 namespace WoWsShipBuilder.Web.Infrastructure.Data;
 
-public class DataInitializer
+public class DataInitializer(IOptions<CdnOptions> cdnOptions, ILocalizationProvider localizationProvider, IAppDataService appDataService)
 {
-    private readonly CdnOptions cdnOptions;
-
-    private readonly ILocalizationProvider localizationProvider;
-
-    private readonly IAppDataService appDataService;
-
-    public DataInitializer(IOptions<CdnOptions> cdnOptions, ILocalizationProvider localizationProvider, IAppDataService appDataService)
-    {
-        this.cdnOptions = cdnOptions.Value;
-        this.localizationProvider = localizationProvider;
-        this.appDataService = appDataService;
-    }
+    private readonly CdnOptions cdnOptions = cdnOptions.Value;
 
     public async Task InitializeData()
     {
-        await this.localizationProvider.RefreshDataAsync(this.cdnOptions.Server, AppConstants.SupportedLanguages.ToArray());
-        if (this.appDataService is ServerAppDataService serverAppDataService)
+        await localizationProvider.RefreshDataAsync(this.cdnOptions.Server, [.. AppConstants.SupportedLanguages]);
+        if (appDataService is ServerAppDataService serverAppDataService)
         {
             if (this.cdnOptions.UseLocalFiles)
             {

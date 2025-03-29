@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using Microsoft.AspNetCore.WebUtilities;
 using WoWsShipBuilder.Infrastructure.Localization;
 using WoWsShipBuilder.Infrastructure.Localization.Resources;
@@ -17,7 +17,7 @@ public static class BuildValidation
 
         if (buildStr.Contains(shortUrlUriPrefix.Last().Equals('/') ? shortUrlUriPrefix : shortUrlUriPrefix + '/'))
         {
-            string? longUrl = await RetrieveLongUrlFromShortLink(buildStr);
+            var longUrl = await RetrieveLongUrlFromShortLink(buildStr);
 
             if (longUrl is not null && QueryHelpers.ParseQuery(longUrl).TryGetValue("build", out var buildStrFromUrl))
             {
@@ -40,7 +40,7 @@ public static class BuildValidation
             try
             {
                 var build = Build.CreateBuildFromString(buildStr);
-                if (selectedShipIndex.Equals(build.ShipIndex, StringComparison.Ordinal))
+                if (selectedShipIndex.Equals(build.ShipIndex, StringComparison.OrdinalIgnoreCase))
                 {
                     validatedBuildString = buildStr;
                     return new(null, validatedBuildString);
@@ -59,9 +59,9 @@ public static class BuildValidation
 
     public static string? ValidateBuildName(string buildName)
     {
-        List<char> invalidChars = Path.GetInvalidFileNameChars().ToList();
+        var invalidChars = Path.GetInvalidFileNameChars().ToList();
         invalidChars.Add(';');
-        List<char> invalidCharsInBuildName = invalidChars.FindAll(buildName.Contains);
+        var invalidCharsInBuildName = invalidChars.FindAll(buildName.Contains);
         return invalidCharsInBuildName.Count != 0 ? $"Invalid characters {string.Join(' ', invalidCharsInBuildName)}" : null;
     }
 

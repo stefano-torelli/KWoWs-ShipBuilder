@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 
 namespace WoWsShipBuilder.Features.Navigation;
 
@@ -23,6 +23,6 @@ public class SessionStateCache
 
     public void SetBuildTransferContainers(ShipBuildContainer container)
     {
-        this.buildTransferContainers = ImmutableList.Create(container);
+        this.buildTransferContainers = [container];
     }
 }

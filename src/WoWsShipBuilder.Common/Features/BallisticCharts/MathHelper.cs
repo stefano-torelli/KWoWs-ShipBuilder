@@ -11,11 +11,14 @@ public static class MathHelper
     /// <returns>A sample from a gaussian distribution.</returns>
     public static double GaussianSample(Random random, double mean, double standardDeviation)
     {
+#pragma warning disable IDE0047
         var x = random.NextDouble();
         var y = random.NextDouble();
         var normalStd = Math.Sqrt(-2.0 * Math.Log(x)) * Math.Sin(2.0 * Math.PI * y);
         var normal = mean + (standardDeviation * normalStd);
+
         return normal;
+#pragma warning restore IDE0047
     }
 
     /// <summary>
@@ -29,6 +32,7 @@ public static class MathHelper
     /// <returns>An adjusted sample from a gaussian distribution within a given interval.</returns>
     public static double AdjustedGaussian(Random random, double mean, double standardDeviation, double min, double max)
     {
+#pragma warning disable IDE0047
         var rng = GaussianSample(random, mean, standardDeviation);
         if (rng < min || rng > max)
         {
@@ -36,6 +40,7 @@ public static class MathHelper
         }
 
         return rng;
+#pragma warning restore IDE0047
     }
 
     /// <summary>
@@ -45,6 +50,7 @@ public static class MathHelper
     /// <returns>The ERF of the given variable.</returns>
     public static double Erf(double x)
     {
+#pragma warning disable IDE0047
         const double a1 = 0.254829592;
         const double a2 = -0.284496736;
         const double a3 = 1.421413741;
@@ -52,7 +58,7 @@ public static class MathHelper
         const double a5 = 1.061405429;
         const double p = 0.3275911;
 
-        int sign = 1;
+        var sign = 1;
         if (x < 0)
         {
             sign = -1;
@@ -60,10 +66,11 @@ public static class MathHelper
 
         x = Math.Abs(x);
 
-        double t = 1.0 / (1.0 + (p * x));
-        double y = 1.0 - (((((((((a5 * t) + a4) * t) + a3) * t) + a2) * t) + a1) * t * Math.Exp(-x * x));
+        var t = 1.0 / (1.0 + (p * x));
+        var y = 1.0 - (((((((((a5 * t) + a4) * t) + a3) * t) + a2) * t) + a1) * t * Math.Exp(-x * x));
 
         return sign * y;
+#pragma warning restore IDE0047
     }
 
     /// <summary>
@@ -83,8 +90,9 @@ public static class MathHelper
     /// <returns>The inverse ERF function of the given variable.</returns>
     public static double MbgErfInv(double x)
     {
+#pragma warning disable IDE0047
         double p;
-        double w = -Math.Log((1.01 - x) * (1.01 + x));
+        var w = -Math.Log((1.01 - x) * (1.01 + x));
         if (w < 5.0000001)
         {
             w -= 2.5000001;
@@ -113,6 +121,7 @@ public static class MathHelper
         }
 
         return p * x;
+#pragma warning restore IDE0047
     }
 
     /// <summary>
@@ -122,6 +131,8 @@ public static class MathHelper
     /// <returns>The inverse CDF function of the given variable.</returns>
     public static double InvCdf(double x)
     {
+#pragma warning disable IDE0047
         return Math.Sqrt(2) * MbgErfInv((2 * x) - 1);
+#pragma warning restore IDE0047
     }
 }

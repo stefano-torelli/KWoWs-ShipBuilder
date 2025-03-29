@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using DynamicData;
 using ReactiveUI;
 using WoWsShipBuilder.DataStructures;
@@ -17,7 +17,7 @@ public class UpgradePanelViewModelBase : ReactiveObject, IBuildComponentProvider
 
     public UpgradePanelViewModelBase(Ship ship, Dictionary<string, Modernization> upgradeData)
     {
-        List<Modernization> filteredModernizations = upgradeData.Select(entry => entry.Value)
+        var filteredModernizations = upgradeData.Select(entry => entry.Value)
             .Where(m => !m.BlacklistedShips.Contains(ship.Name))
             .Where(m => m.ShipLevel.Contains(ship.Tier))
             .Where(m => ship.ShipNation == Nation.Common || m.AllowedNations.Contains(ship.ShipNation))
@@ -26,23 +26,23 @@ public class UpgradePanelViewModelBase : ReactiveObject, IBuildComponentProvider
             .Select(m => FilterModernizationModifiersForClass(m, ship.ShipClass))
             .ToList();
 
-        List<List<Modernization>> groupedList = filteredModernizations.GroupBy(m => m.Slot)
+        var groupedList = filteredModernizations.GroupBy(m => m.Slot)
             .Select(group => (group.Key, group.OrderBy(m => m.Type).ThenBy(m => m.Index).ToList()))
             .OrderBy(item => item.Key)
             .Select(item => item.Item2)
             .ToList();
 
-        foreach (List<Modernization> subList in groupedList)
+        foreach (var subList in groupedList)
         {
             subList.Insert(0, PlaceholderModernization);
         }
 
         this.AvailableModernizationList = groupedList;
-        this.SelectedModernizationList = new(this.AvailableModernizationList.Select(list => list[0]).Where(m => !string.IsNullOrEmpty(m.Index)));
+        this.SelectedModernizationList = [.. this.AvailableModernizationList.Select(list => list[0]).Where(m => !string.IsNullOrEmpty(m.Index))];
 
         this.OnModernizationSelected = (modernization, modernizationList) =>
         {
-            int listIndex = this.AvailableModernizationList.IndexOf(modernizationList);
+            var listIndex = this.AvailableModernizationList.IndexOf(modernizationList);
             var oldSelection = this.SelectedModernizationList.ToList().Find(m => this.AvailableModernizationList[listIndex].Contains(m));
 
             if (oldSelection != null)
@@ -83,7 +83,7 @@ public class UpgradePanelViewModelBase : ReactiveObject, IBuildComponentProvider
     public void LoadBuild(IEnumerable<string> storedData)
     {
         var selection = new List<Modernization>();
-        foreach (List<Modernization> modernizations in this.AvailableModernizationList)
+        foreach (var modernizations in this.AvailableModernizationList)
         {
             selection.AddRange(modernizations.Where(modernization => storedData.Contains(modernization.Index)));
         }
@@ -96,7 +96,7 @@ public class UpgradePanelViewModelBase : ReactiveObject, IBuildComponentProvider
 
     public List<string> SaveBuild()
     {
-        return this.SelectedModernizationList.Select(modernization => modernization.Index).ToList();
+        return [.. this.SelectedModernizationList.Select(modernization => modernization.Index)];
     }
 
     private static Modernization FilterModernizationModifiersForClass(Modernization modernization, ShipClass shipClass)
@@ -110,7 +110,7 @@ public class UpgradePanelViewModelBase : ReactiveObject, IBuildComponentProvider
             BlacklistedShips = modernization.BlacklistedShips,
             Id = modernization.Id,
             Index = modernization.Index,
-            Modifiers = modernization.Modifiers.Where(x => !x.Name.Contains('_') || x.Name.Contains("_" + shipClass)).ToImmutableList(),
+            Modifiers = [.. modernization.Modifiers.Where(x => !x.Name.Contains('_') || x.Name.Contains("_" + shipClass))],
             Name = modernization.Name,
             Slot = modernization.Slot,
             Type = modernization.Type,

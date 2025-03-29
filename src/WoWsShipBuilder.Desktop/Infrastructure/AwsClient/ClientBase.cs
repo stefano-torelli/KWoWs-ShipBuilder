@@ -7,17 +7,11 @@ using WoWsShipBuilder.Infrastructure.ApplicationData;
 // ReSharper disable VirtualMemberNeverOverridden.Global
 namespace WoWsShipBuilder.Desktop.Infrastructure.AwsClient;
 
-public abstract class ClientBase
+public abstract class ClientBase(IDataService dataService, IAppDataService appDataService)
 {
-    protected ClientBase(IDataService dataService, IAppDataService appDataService)
-    {
-        this.DataService = dataService;
-        this.AppDataService = appDataService;
-    }
+    protected IAppDataService AppDataService { get; } = appDataService;
 
-    protected IAppDataService AppDataService { get; }
-
-    protected IDataService DataService { get; }
+    protected IDataService DataService { get; } = dataService;
 
     protected abstract HttpClient Client { get; }
 

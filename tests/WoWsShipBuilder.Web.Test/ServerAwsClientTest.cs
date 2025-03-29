@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Net.Http;
@@ -44,7 +45,7 @@ public class ServerAwsClientTest
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage { Content = new StringContent(JsonSerializer.Serialize(testVersionInfo, AppConstants.JsonSerializerOptions)) });
 
-        var shipRequestExpression = ItExpr.Is<HttpRequestMessage>(message => message.RequestUri!.AbsolutePath.Equals("/api/live/Ship/Germany.json"));
+        var shipRequestExpression = ItExpr.Is<HttpRequestMessage>(message => message.RequestUri!.AbsolutePath.Equals("/api/live/Ship/Germany.json", StringComparison.Ordinal));
         this.messageHandlerMock.Protected().Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
                 shipRequestExpression,
@@ -52,7 +53,7 @@ public class ServerAwsClientTest
             .ReturnsAsync(new HttpResponseMessage { Content = new StringContent(JsonSerializer.Serialize(shipDictionary, AppConstants.JsonSerializerOptions)) });
 
         var cdnOptions = new CdnOptions { Host = "https://example.com" };
-        IOptions<CdnOptions> options = Options.Create(cdnOptions);
+        var options = Options.Create(cdnOptions);
         var client = new ServerAwsClient(new(this.messageHandlerMock.Object), options, NullLogger<ServerAwsClient>.Instance);
 
         var versionInfo = await client.DownloadVersionInfo(ServerType.Live);

@@ -1,4 +1,4 @@
-﻿namespace WoWsShipBuilder.Features.ShipComparison;
+namespace WoWsShipBuilder.Features.ShipComparison;
 
 public enum ShipComparisonDataSections
 {
@@ -24,5 +24,5 @@ public enum ShipComparisonDataSections
     Bombs,
     Sonar,
 
-    // TODO Consumables,
+    // Need to add Consumables too...
 }

@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using WoWsShipBuilder.DataElements.DataElementAttributes;
 using WoWsShipBuilder.DataStructures.Modifiers;
 using WoWsShipBuilder.DataStructures.Projectile;
+using WoWsShipBuilder.Features.DataContainers.Projectiles;
 using WoWsShipBuilder.Infrastructure.ApplicationData;
 
 namespace WoWsShipBuilder.Features.DataContainers;
@@ -34,14 +35,15 @@ public partial class DepthChargeDataContainer : ProjectileDataContainer
 
     public static DepthChargeDataContainer FromChargesName(string name, ImmutableList<Modifier> modifiers)
     {
+#pragma warning disable IDE0047 // Remove unnecessary parentheses
         var depthCharge = AppData.FindProjectile<DepthCharge>(name);
-        decimal damage = modifiers.ApplyModifiers("DepthChargeDataContainer.Damage", (decimal)depthCharge.Damage);
-        decimal minSpeed = (decimal)(depthCharge.SinkingSpeed * (1 - depthCharge.SinkingSpeedRng)) * Constants.KnotsToMps;
-        decimal maxSpeed = (decimal)(depthCharge.SinkingSpeed * (1 + depthCharge.SinkingSpeedRng)) * Constants.KnotsToMps;
-        decimal minTimer = (decimal)(depthCharge.DetonationTimer - depthCharge.DetonationTimerRng);
-        decimal maxTimer = (decimal)(depthCharge.DetonationTimer + depthCharge.DetonationTimerRng);
-        decimal minDetDepth = (minSpeed * minTimer) / 2;
-        decimal maxDetDepth = (maxSpeed * maxTimer) / 2;
+        var damage = modifiers.ApplyModifiers("DepthChargeDataContainer.Damage", (decimal)depthCharge.Damage);
+        var minSpeed = (decimal)(depthCharge.SinkingSpeed * (1 - depthCharge.SinkingSpeedRng)) * Constants.KnotsToMps;
+        var maxSpeed = (decimal)(depthCharge.SinkingSpeed * (1 + depthCharge.SinkingSpeedRng)) * Constants.KnotsToMps;
+        var minTimer = (decimal)(depthCharge.DetonationTimer - depthCharge.DetonationTimerRng);
+        var maxTimer = (decimal)(depthCharge.DetonationTimer + depthCharge.DetonationTimerRng);
+        var minDetDepth = (minSpeed * minTimer) / 2;
+        var maxDetDepth = (maxSpeed * maxTimer) / 2;
 
         var depthChargeDataContainer = new DepthChargeDataContainer
         {
@@ -58,5 +60,6 @@ public partial class DepthChargeDataContainer : ProjectileDataContainer
         depthChargeDataContainer.UpdateDataElements();
 
         return depthChargeDataContainer;
+#pragma warning restore IDE0047 // Remove unnecessary parentheses
     }
 }

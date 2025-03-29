@@ -1,4 +1,4 @@
-﻿// Based on the EquatableArray{T} implementation from CommunityToolkit/dotnet
+// Based on the EquatableArray{T} implementation from CommunityToolkit/dotnet
 // see https://github.com/CommunityToolkit/dotnet/blob/main/src/CommunityToolkit.Mvvm.SourceGenerators/Helpers/EquatableArray%7BT%7D.cs for the original implementation
 
 using System;
@@ -14,7 +14,7 @@ namespace WoWsShipBuilder.Data.Generator.Utilities;
 /// <summary>
 /// Extensions for <see cref="EquatableArray{T}"/>.
 /// </summary>
-internal static class EquatableArray
+public static class EquatableArray
 {
     public static EquatableArray<T> ToEquatableArray<T>(this ImmutableArray<T> array)
         where T : IEquatable<T>
@@ -25,7 +25,7 @@ internal static class EquatableArray
     public static EquatableArray<T> ToEquatableArray<T>(this IEnumerable<T> enumerable)
         where T : IEquatable<T>
     {
-        return new(enumerable.ToImmutableArray());
+        return new([.. enumerable]);
     }
 }
 
@@ -33,19 +33,13 @@ internal static class EquatableArray
 /// An immutable, equatable array. This is equivalent to <see cref="ImmutableArray{T}"/> but with value equality support.
 /// </summary>
 /// <typeparam name="T">The type of values in the array.</typeparam>
-internal readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnumerable<T>
+public readonly struct EquatableArray<T>(ImmutableArray<T> array) : IEquatable<EquatableArray<T>>, IEnumerable<T>
     where T : IEquatable<T>
 {
     /// <summary>
     /// The underlying <typeparamref name="T"/> array.
     /// </summary>
-    private readonly T[]? array;
-
-    public EquatableArray(ImmutableArray<T> array)
-    {
-        this.array = Unsafe.As<ImmutableArray<T>, T[]?>(ref array);
-    }
-
+    private readonly T[]? array = Unsafe.As<ImmutableArray<T>, T[]?>(ref array);
     public static readonly EquatableArray<T> Empty = new();
 
     /// <summary>
@@ -74,20 +68,20 @@ internal readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnu
     /// <inheritdoc/>
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
-        return obj is EquatableArray<T> array && Equals(this, array);
+        return obj is EquatableArray<T> otherArray && Equals(this, otherArray);
     }
 
     /// <inheritdoc/>
     public override int GetHashCode()
     {
-        if (this.array is not { } array)
+        if (this.array is not { } notEmptyArray)
         {
             return 0;
         }
 
         HashCode hashCode = default;
 
-        foreach (var item in array)
+        foreach (var item in notEmptyArray)
         {
             hashCode.Add(item);
         }
@@ -130,7 +124,7 @@ internal readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnu
     /// <returns>The newly instantiated array.</returns>
     public T[] ToArray()
     {
-        return this.AsImmutableArray().ToArray();
+        return [.. this.AsImmutableArray()];
     }
 
     /// <summary>

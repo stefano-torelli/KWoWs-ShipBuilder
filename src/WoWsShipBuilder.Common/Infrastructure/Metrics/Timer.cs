@@ -1,18 +1,12 @@
-﻿using System.Diagnostics.Metrics;
+using System.Diagnostics.Metrics;
 
 namespace WoWsShipBuilder.Infrastructure.Metrics;
 
-internal sealed class Timer : IDisposable
+internal sealed class Timer(Histogram<double> observer) : IDisposable
 {
-    private readonly ValueStopwatch stopwatch;
+    private readonly ValueStopwatch stopwatch = ValueStopwatch.StartNew();
 
-    private readonly Histogram<double> observer;
-
-    public Timer(Histogram<double> observer)
-    {
-        this.stopwatch = ValueStopwatch.StartNew();
-        this.observer = observer;
-    }
+    private readonly Histogram<double> observer = observer;
 
     public void Dispose()
     {

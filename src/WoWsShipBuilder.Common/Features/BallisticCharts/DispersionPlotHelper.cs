@@ -16,7 +16,7 @@ public static class DispersionPlotHelper
     /// <returns>The length of the horizontal and vertical radii of the dispersion ellipse.</returns>
     private static (double horizontalRadius, double verticalRadius) GetDispersionEllipse(Dispersion dispersionData, double maxRange, double aimingRange, double modifier)
     {
-        (double horizontalRadius, double verticalRadius) = dispersionData.CalculateDispersion(maxRange, modifier, aimingRange);
+        (var horizontalRadius, var verticalRadius) = dispersionData.CalculateDispersion(maxRange, modifier, aimingRange);
         return (horizontalRadius, verticalRadius);
     }
 
@@ -31,7 +31,7 @@ public static class DispersionPlotHelper
     private static (double waterLineProjection, double perpendicularToWaterProjection, double projectedOnWaterVerticalRadius, double perpendicularToWaterVerticalRadius) GetProjectedEllipse(ArtilleryShell shell, double maxRange, double aimingRange, double verticalRadius)
     {
         double impactAngle;
-        List<KeyValuePair<double, Ballistic>> ballistic = BallisticHelper.CalculateBallistic(shell, maxRange, shell.Penetration).Where(x => x.Key >= aimingRange).ToList();
+        var ballistic = BallisticHelper.CalculateBallistic(shell, maxRange, shell.Penetration).Where(x => x.Key >= aimingRange).ToList();
         if (ballistic.Count != 0)
         {
             impactAngle = ballistic[0].Value.ImpactAngle;
@@ -56,11 +56,12 @@ public static class DispersionPlotHelper
     /// <returns>The ratio to identify the area where 50% of the shots lends on average.</returns>
     private static double GetHalfHitsRatio(double sigma)
     {
-        double left = -sigma;
-        double right = sigma;
-        double z = MathHelper.Cdf(right) - MathHelper.Cdf(left);
-        double halfRatio = MathHelper.InvCdf((0.25 * z) + MathHelper.Cdf(left)) / left;
-
+        var left = -sigma;
+        var right = sigma;
+        var z = MathHelper.Cdf(right) - MathHelper.Cdf(left);
+#pragma warning disable IDE0047 // Parentheses can be removed
+        var halfRatio = MathHelper.InvCdf((0.25 * z) + MathHelper.Cdf(left)) / left;
+#pragma warning restore IDE0047 // Parentheses can be removed
         return halfRatio;
     }
 
@@ -76,11 +77,12 @@ public static class DispersionPlotHelper
     /// <returns>3 lists of hit points.</returns>
     private static (List<Point> RealPlane, List<Point> OnWaterLine, List<Point> PerpendicularToWaterLine) GetHitPoints(double sigma, double horizontalRadius, double verticalRadius, int shotsNumber, double waterLineProjection, double perpendicularToWaterLineProjection)
     {
+#pragma warning disable IDE0047 // Parentheses can be removed
         Random random = new();
-        List<Point> realHitPoints = new();
-        List<Point> onWaterHitPoints = new();
-        List<Point> onVerticalHitPoints = new();
-        for (int i = 0; i < shotsNumber; i++)
+        List<Point> realHitPoints = [];
+        List<Point> onWaterHitPoints = [];
+        List<Point> onVerticalHitPoints = [];
+        for (var i = 0; i < shotsNumber; i++)
         {
             var randomRad = 2 * Math.PI * random.NextDouble();
             var randomLen = MathHelper.AdjustedGaussian(random, 0.0, 1 / sigma, -1, 1);
@@ -98,6 +100,7 @@ public static class DispersionPlotHelper
         }
 
         return (realHitPoints, onWaterHitPoints, onVerticalHitPoints);
+#pragma warning restore IDE0047 // Parentheses can be removed
     }
 
     /// <summary>
@@ -112,23 +115,35 @@ public static class DispersionPlotHelper
     /// <param name="shotsNumber">The number of shots to simulate.</param>
     /// <param name="modifier">The dispersion modifier.</param>
     /// <returns>A DispersionEllipse object containing all the information.</returns>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1117:Parameters should be on same line or separate lines", Justification = "Way too long.")]
     public static DispersionEllipse CalculateDispersionPlotParameters(string name, Dispersion dispersionData, ArtilleryShell shell, double maxRange, double aimingRange, double sigma, int shotsNumber, double modifier)
     {
-        (double horizontalRadius, double verticalRadius) = GetDispersionEllipse(dispersionData, maxRange, aimingRange, modifier);
+        (var horizontalRadius, var verticalRadius) = GetDispersionEllipse(dispersionData, maxRange, aimingRange, modifier);
         var projectedEllipse = GetProjectedEllipse(shell, maxRange, aimingRange, verticalRadius);
         if (projectedEllipse == (0, 0, 0, 0))
         {
             return new(name, dispersionData, shell, sigma, maxRange, modifier);
         }
 
-        double halfRatio = GetHalfHitsRatio(sigma);
-        (List<Point> realPlane, List<Point> onWaterLine, List<Point> perpendicularToWaterLine) = GetHitPoints(sigma, horizontalRadius, verticalRadius, shotsNumber, projectedEllipse.waterLineProjection, projectedEllipse.perpendicularToWaterProjection);
+        var halfRatio = GetHalfHitsRatio(sigma);
+        (var realPlane, var onWaterLine, var perpendicularToWaterLine) = GetHitPoints(sigma, horizontalRadius, verticalRadius, shotsNumber, projectedEllipse.waterLineProjection, projectedEllipse.perpendicularToWaterProjection);
 
-        return new(name, dispersionData, shell, sigma, maxRange, modifier, horizontalRadius, verticalRadius,
-            projectedEllipse.projectedOnWaterVerticalRadius, projectedEllipse.perpendicularToWaterVerticalRadius,
-            realPlane, onWaterLine, perpendicularToWaterLine,
-            horizontalRadius * halfRatio, verticalRadius * halfRatio, projectedEllipse.projectedOnWaterVerticalRadius * halfRatio,
+        return new(
+            name,
+            dispersionData,
+            shell,
+            sigma,
+            maxRange,
+            modifier,
+            horizontalRadius,
+            verticalRadius,
+            projectedEllipse.projectedOnWaterVerticalRadius,
+            projectedEllipse.perpendicularToWaterVerticalRadius,
+            realPlane,
+            onWaterLine,
+            perpendicularToWaterLine,
+            horizontalRadius * halfRatio,
+            verticalRadius * halfRatio,
+            projectedEllipse.projectedOnWaterVerticalRadius * halfRatio,
             projectedEllipse.perpendicularToWaterVerticalRadius * halfRatio);
     }
 
@@ -137,11 +152,23 @@ public static class DispersionPlotHelper
 
 public sealed record DispersionEllipse(string Label, Dispersion DispersionData, ArtilleryShell Shell, double Sigma, double MaxRange, double Modifier)
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1117:Parameters should be on same line or separate lines", Justification = "Way too long.")]
-    public DispersionEllipse(string name, Dispersion dispersionData, ArtilleryShell shell, double sigma, double maxRange, double modifier,
-        double horizontalRadius, double verticalRadius, double projectedOnWaterVerticalRadius, double projectedOnPerpendicularToWaterVerticalRadius,
-        List<DispersionPlotHelper.Point> realHitPoints, List<DispersionPlotHelper.Point> onWaterHitPoints, List<DispersionPlotHelper.Point> onPerpendicularToWaterHitPoints,
-        double horizontalRadiusHalfHitPoints, double verticalRadiusHalfHitPoints, double projectedOnWaterVerticalRadiusHalfHitPoints,
+    public DispersionEllipse(
+        string name,
+        Dispersion dispersionData,
+        ArtilleryShell shell,
+        double sigma,
+        double maxRange,
+        double modifier,
+        double horizontalRadius,
+        double verticalRadius,
+        double projectedOnWaterVerticalRadius,
+        double projectedOnPerpendicularToWaterVerticalRadius,
+        List<DispersionPlotHelper.Point> realHitPoints,
+        List<DispersionPlotHelper.Point> onWaterHitPoints,
+        List<DispersionPlotHelper.Point> onPerpendicularToWaterHitPoints,
+        double horizontalRadiusHalfHitPoints,
+        double verticalRadiusHalfHitPoints,
+        double projectedOnWaterVerticalRadiusHalfHitPoints,
         double projectedOnPerpendicularToWaterVerticalRadiusHalfHitPoints)
         : this(name, dispersionData, shell, sigma, maxRange, modifier)
     {
@@ -169,11 +196,11 @@ public sealed record DispersionEllipse(string Label, Dispersion DispersionData, 
 
     public double ProjectedOnPerpendicularToWaterVerticalRadius { get; }
 
-    public List<DispersionPlotHelper.Point> RealHitPoints { get; } = new();
+    public List<DispersionPlotHelper.Point> RealHitPoints { get; } = [];
 
-    public List<DispersionPlotHelper.Point> OnWaterHitPoints { get; } = new();
+    public List<DispersionPlotHelper.Point> OnWaterHitPoints { get; } = [];
 
-    public List<DispersionPlotHelper.Point> PerpendicularToWaterHitPoints { get; } = new();
+    public List<DispersionPlotHelper.Point> PerpendicularToWaterHitPoints { get; } = [];
 
     public double HorizontalRadiusHalfHitPoints { get; }
 

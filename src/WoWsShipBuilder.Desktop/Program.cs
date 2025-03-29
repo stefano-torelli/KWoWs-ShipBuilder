@@ -18,6 +18,10 @@ namespace WoWsShipBuilder.Desktop;
 
 internal sealed class Program
 {
+    private Program()
+    {
+    }
+
     [STAThread]
     public static void Main(string[] args)
     {
@@ -44,6 +48,7 @@ internal sealed class Program
         await app.StartAsync();
 
         var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
         LocalizeConverter.InitializeLocalizer(app.Services.GetRequiredService<ILocalizer>());
 
         var avaloniaApp = BuildAvaloniaApp(app.Services);
@@ -60,10 +65,9 @@ internal sealed class Program
         {
             avaloniaApp.StartWithClassicDesktopLifetime(args);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            logger.LogCritical(e, "Encountered a critical error that will end the application.");
-            throw;
+            logger.LogCritical(ex, "Encountered a critical error that will end the application. Args: {Args} - Exception: {Exception}", string.Join(", ", args), ex.ToString());
         }
         finally
         {
@@ -83,7 +87,7 @@ internal sealed class Program
 
     public static AppBuilder BuildAvaloniaApp() => BuildAvaloniaApp(CreatePreviewServiceProvider());
 
-    private static IServiceProvider CreatePreviewServiceProvider()
+    private static ServiceProvider CreatePreviewServiceProvider()
     {
         return new ServiceCollection().AddLogging(builder => builder.ClearProviders()).BuildServiceProvider();
     }

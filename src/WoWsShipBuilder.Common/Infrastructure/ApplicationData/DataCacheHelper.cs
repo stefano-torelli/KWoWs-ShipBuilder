@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Text.Json;
 using WoWsShipBuilder.DataStructures;
 using WoWsShipBuilder.DataStructures.Aircraft;
@@ -39,7 +39,7 @@ public static class DataCacheHelper
             _ => throw new InvalidOperationException(),
         };
 
-        object? jsonObject = JsonSerializer.Deserialize(content, type, AppConstants.JsonSerializerOptions);
+        var jsonObject = JsonSerializer.Deserialize(content, type, AppConstants.JsonSerializerOptions);
 
         await Semaphore.WaitAsync();
         switch (category.ToLowerInvariant())
@@ -81,7 +81,7 @@ public static class DataCacheHelper
 
                 break;
             case "unit":
-                // TODO: add once unit is actually needed
+                // Check or add once unit is actually needed
                 break;
             case "summary":
                 if (jsonObject is List<ShipSummary> shipSummaries)

@@ -1,4 +1,4 @@
-﻿using WoWsShipBuilder.DataStructures;
+using WoWsShipBuilder.DataStructures;
 using WoWsShipBuilder.DataStructures.Ship;
 using WoWsShipBuilder.Features.Builds;
 using WoWsShipBuilder.Features.DataContainers;
@@ -30,9 +30,9 @@ public sealed class GridDataWrapper
         this.BuildName = shipBuildContainer.Build?.BuildName;
 
         this.MainBattery = this.ShipBuildContainer.ShipDataContainer?.MainBatteryDataContainer;
-        this.HeShell = this.MainBattery?.ShellData.Find(x => x.Type.Equals($"ArmamentType_{ShellType.HE.ShellTypeToString()}", StringComparison.Ordinal));
-        this.ApShell = this.MainBattery?.ShellData.Find(x => x.Type.Equals($"ArmamentType_{ShellType.AP.ShellTypeToString()}", StringComparison.Ordinal));
-        this.SapShell = this.MainBattery?.ShellData.Find(x => x.Type.Equals($"ArmamentType_{ShellType.SAP.ShellTypeToString()}", StringComparison.Ordinal));
+        this.HeShell = this.MainBattery?.ShellData.Find(x => x.Type.Equals($"ArmamentType_{ShellType.HE.ShellTypeToString()}", StringComparison.OrdinalIgnoreCase));
+        this.ApShell = this.MainBattery?.ShellData.Find(x => x.Type.Equals($"ArmamentType_{ShellType.AP.ShellTypeToString()}", StringComparison.OrdinalIgnoreCase));
+        this.SapShell = this.MainBattery?.ShellData.Find(x => x.Type.Equals($"ArmamentType_{ShellType.SAP.ShellTypeToString()}", StringComparison.OrdinalIgnoreCase));
 
         var torpedoArmament = shipBuildContainer.ShipDataContainer.TorpedoArmamentDataContainer;
         this.TorpedoLauncher = torpedoArmament;
@@ -49,9 +49,9 @@ public sealed class GridDataWrapper
         this.Survivability = shipBuildContainer.ShipDataContainer.SurvivabilityDataContainer;
         this.Sonar = shipBuildContainer.ShipDataContainer.PingerGunDataContainer;
 
-        this.RocketPlanes = new(shipBuildContainer.ShipDataContainer.CvAircraftDataContainer?.Where(x => x.WeaponType.Equals(ProjectileType.Rocket.ProjectileTypeToString(), StringComparison.Ordinal)).ToList());
-        this.TorpedoBombers = new(shipBuildContainer.ShipDataContainer.CvAircraftDataContainer?.Where(x => x.WeaponType.Equals(ProjectileType.Torpedo.ProjectileTypeToString(), StringComparison.Ordinal)).ToList());
-        this.Bombers = new(shipBuildContainer.ShipDataContainer.CvAircraftDataContainer?.Where(x => x.WeaponType.Equals(ProjectileType.Bomb.ProjectileTypeToString(), StringComparison.Ordinal) || x.WeaponType.Equals(ProjectileType.SkipBomb.ProjectileTypeToString(), StringComparison.Ordinal)).ToList());
+        this.RocketPlanes = new(shipBuildContainer.ShipDataContainer.CvAircraftDataContainer?.Where(x => x.WeaponType.Equals(ProjectileType.Rocket.ProjectileTypeToString(), StringComparison.OrdinalIgnoreCase)).ToList());
+        this.TorpedoBombers = new(shipBuildContainer.ShipDataContainer.CvAircraftDataContainer?.Where(x => x.WeaponType.Equals(ProjectileType.Torpedo.ProjectileTypeToString(), StringComparison.OrdinalIgnoreCase)).ToList());
+        this.Bombers = new(shipBuildContainer.ShipDataContainer.CvAircraftDataContainer?.Where(x => x.WeaponType.Equals(ProjectileType.Bomb.ProjectileTypeToString(), StringComparison.OrdinalIgnoreCase) || x.WeaponType.Equals(ProjectileType.SkipBomb.ProjectileTypeToString(), StringComparison.OrdinalIgnoreCase)).ToList());
     }
 
     public ShipBuildContainer ShipBuildContainer { get; }

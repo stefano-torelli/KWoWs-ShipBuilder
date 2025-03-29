@@ -13,23 +13,15 @@ using WoWsShipBuilder.Infrastructure.Utility;
 
 namespace WoWsShipBuilder.Desktop.Infrastructure.Data;
 
-public class DesktopAppDataService : IAppDataService
+public class DesktopAppDataService(IFileSystem fileSystem, IDataService dataService, AppSettings appSettings) : IAppDataService
 {
-    private readonly AppSettings appSettings;
+    private readonly AppSettings appSettings = appSettings;
 
-    private readonly IDataService dataService;
+    private readonly IDataService dataService = dataService;
 
-    private readonly IFileSystem fileSystem;
+    private readonly IFileSystem fileSystem = fileSystem;
 
-    public DesktopAppDataService(IFileSystem fileSystem, IDataService dataService, AppSettings appSettings)
-    {
-        this.fileSystem = fileSystem;
-        this.dataService = dataService;
-        this.appSettings = appSettings;
-        this.DefaultAppDataDirectory = dataService.CombinePaths(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppConstants.ShipBuilderName);
-    }
-
-    public string DefaultAppDataDirectory { get; }
+    public string DefaultAppDataDirectory { get; } = dataService.CombinePaths(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppConstants.ShipBuilderName);
 
     public string AppDataDirectory
     {
@@ -48,7 +40,7 @@ public class DesktopAppDataService : IAppDataService
 
     public string GetDataPath(ServerType serverType)
     {
-        string serverName = serverType.StringName();
+        var serverName = serverType.StringName();
         return this.dataService.CombinePaths(this.AppDataDirectory, "json", serverName);
     }
 
@@ -67,11 +59,11 @@ public class DesktopAppDataService : IAppDataService
     /// <returns>A possibly empty list of installed locales.</returns>
     public async Task<List<string>> GetInstalledLocales(ServerType serverType, bool includeFileType = true)
     {
-        // TODO: return Task.FromResult
+        // return Task.FromResult
         await Task.CompletedTask;
         this.fileSystem.Directory.CreateDirectory(this.GetLocalizationPath(serverType));
         var files = this.fileSystem.Directory.GetFiles(this.GetLocalizationPath(serverType)).Select(file => this.fileSystem.FileInfo.New(file));
-        return includeFileType ? files.Select(file => file.Name).ToList() : files.Select(file => this.fileSystem.Path.GetFileNameWithoutExtension(file.Name)).ToList();
+        return includeFileType ? [.. files.Select(file => file.Name)] : [.. files.Select(file => this.fileSystem.Path.GetFileNameWithoutExtension(file.Name))];
     }
 
     /// <summary>
@@ -81,13 +73,13 @@ public class DesktopAppDataService : IAppDataService
     /// <returns>The local VersionInfo or null if none was found.</returns>
     public async Task<VersionInfo?> GetCurrentVersionInfo(ServerType serverType)
     {
-        string filePath = this.dataService.CombinePaths(this.GetDataPath(serverType), "VersionInfo.json");
+        var filePath = this.dataService.CombinePaths(this.GetDataPath(serverType), "VersionInfo.json");
         return await this.DeserializeFile<VersionInfo>(filePath);
     }
 
     public async Task<Dictionary<string, string>?> ReadLocalizationData(ServerType serverType, string language)
     {
-        string fileName = this.dataService.CombinePaths(this.GetDataPath(serverType), "Localization", $"{language}.json");
+        var fileName = this.dataService.CombinePaths(this.GetDataPath(serverType), "Localization", $"{language}.json");
         return this.fileSystem.File.Exists(fileName) ? await this.DeserializeFile<Dictionary<string, string>>(fileName) : null;
     }
 
@@ -113,14 +105,14 @@ public class DesktopAppDataService : IAppDataService
             foreach (var file in category.Value.Select(file => file.FileName))
             {
                 var filePath = this.fileSystem.Path.Combine(categoryPath, file);
-                string content = await this.fileSystem.File.ReadAllTextAsync(filePath, ct);
+                var content = await this.fileSystem.File.ReadAllTextAsync(filePath, ct);
                 await DataCacheHelper.AddToCache(file, category.Key, content);
             }
         });
 
         Helpers.InitializeShipSelectorDataStructure();
         sw.Stop();
-        Logging.Logger.LogDebug("Loaded local files in {}", sw.Elapsed);
+        Logging.Logger.LogDebug("Loaded local files in {Elapsed}", sw.Elapsed);
     }
 
     public async Task<T?> DeserializeFile<T>(string filePath)

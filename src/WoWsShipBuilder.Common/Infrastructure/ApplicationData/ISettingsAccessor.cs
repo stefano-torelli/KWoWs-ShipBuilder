@@ -1,10 +1,10 @@
-﻿using WoWsShipBuilder.Features.Settings;
+using WoWsShipBuilder.Features.Settings;
 
 namespace WoWsShipBuilder.Infrastructure.ApplicationData;
 
 public interface ISettingsAccessor
 {
-    public Task<AppSettings?> LoadSettings();
+    Task<AppSettings?> LoadSettings();
 
-    public Task SaveSettings(AppSettings appSettings);
+    Task SaveSettings(AppSettings appSettings);
 }

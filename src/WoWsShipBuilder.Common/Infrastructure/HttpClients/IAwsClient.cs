@@ -5,7 +5,7 @@ namespace WoWsShipBuilder.Infrastructure.HttpClients;
 
 public interface IAwsClient
 {
-    public Task<VersionInfo> DownloadVersionInfo(ServerType serverType);
+    Task<VersionInfo> DownloadVersionInfo(ServerType serverType);
 
-    public Task DownloadFiles(ServerType serverType, List<(string, string)> relativeFilePaths, IProgress<int>? downloadProgress = null);
+    Task DownloadFiles(ServerType serverType, List<(string, string)> relativeFilePaths, IProgress<int>? downloadProgress = null);
 }

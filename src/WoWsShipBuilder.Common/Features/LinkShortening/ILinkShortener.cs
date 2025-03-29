@@ -1,10 +1,10 @@
-﻿using WoWsShipBuilder.Features.Builds;
+using WoWsShipBuilder.Features.Builds;
 
 namespace WoWsShipBuilder.Features.LinkShortening;
 
 public interface ILinkShortener
 {
-    public bool IsAvailable { get; }
+    bool IsAvailable { get; }
 
     Task<ShorteningResult> CreateLinkForBuild(Build build);
 

@@ -16,7 +16,7 @@ public partial class SecondaryBatteryDataContainer : DataContainerBase
 {
     public string Name { get; set; } = default!;
 
-    public ImmutableList<string> TurretName { get; set; } = ImmutableList<string>.Empty;
+    public ImmutableList<string> TurretName { get; set; } = [];
 
     public FormattedTextDataElement TurretSetup { get; set; } = default!;
 
@@ -68,6 +68,7 @@ public partial class SecondaryBatteryDataContainer : DataContainerBase
 
     public static List<SecondaryBatteryDataContainer>? FromShip(Ship ship, ImmutableList<ShipUpgrade> shipConfiguration, ImmutableList<Modifier> modifiers)
     {
+#pragma warning disable IDE0047 // Remove unnecessary parentheses
         var secondary = ship.Hulls[shipConfiguration.First(c => c.UcType == ComponentType.Hull).Components[ComponentType.Hull][0]].SecondaryModule;
         if (secondary == null)
         {
@@ -81,32 +82,32 @@ public partial class SecondaryBatteryDataContainer : DataContainerBase
             .Select(group => group.ToList())
             .ToList();
 
-        foreach (List<Gun> secondaryGroup in groupedSecondaries)
+        foreach (var secondaryGroup in groupedSecondaries)
         {
             var secondaryGun = secondaryGroup[0];
-            string arrangementString = $"{secondaryGroup.Count} x {secondaryGun.NumBarrels} {{0}}";
-            List<string> turretName = new() { secondaryGun.Name };
+            var arrangementString = $"{secondaryGroup.Count} x {secondaryGun.NumBarrels} {{0}}";
+            List<string> turretName = [secondaryGun.Name];
 
-            decimal reload = modifiers.ApplyModifiers("SecondaryBatteryDataContainer.Reload", secondaryGun.Reload);
+            var reload = modifiers.ApplyModifiers("SecondaryBatteryDataContainer.Reload", secondaryGun.Reload);
 
-            decimal range = modifiers.ApplyModifiers("SecondaryBatteryDataContainer.Range", secondary.MaxRange) / 1000;
+            var range = modifiers.ApplyModifiers("SecondaryBatteryDataContainer.Range", secondary.MaxRange) / 1000;
 
             // Consider dispersion modifiers
             var dispersionModifier = (float)modifiers.ApplyModifiers("SecondaryBatteryDataContainer.Dispersion.IdealRadius", 1m);
             var dispersion = secondaryGun.Dispersion;
             var dispersionContainer = dispersion.CalculateDispersion((double)range * 1000, dispersionModifier);
 
-            decimal rof = 60 / reload;
+            var rof = 60 / reload;
 
             var nfi = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
             nfi.NumberGroupSeparator = "'";
 
-            int barrelCount = secondaryGroup.Count * secondaryGun.NumBarrels;
+            var barrelCount = secondaryGroup.Count * secondaryGun.NumBarrels;
 
             var secondaryBatteryDataContainer = new SecondaryBatteryDataContainer
             {
                 Name = arrangementString,
-                TurretName = turretName.ToImmutableList(),
+                TurretName = [.. turretName],
                 TurretSetup = new(arrangementString, turretName, ArgumentsTextKind: DataElementTextKind.LocalizationKey),
                 BarrelsLayout = $"{secondaryGroup.Count} x {secondaryGun.NumBarrels}",
                 BarrelsCount = secondaryGroup.Count * secondaryGun.NumBarrels,
@@ -141,7 +142,7 @@ public partial class SecondaryBatteryDataContainer : DataContainerBase
             }
 
             secondaryBatteryDataContainer.Shell = shellData;
-            secondaryBatteryDataContainer.DisplayFpm = shellData.Type.Equals($"ArmamentType_{ShellType.HE.ShellTypeToString()}", StringComparison.Ordinal);
+            secondaryBatteryDataContainer.DisplayFpm = shellData.Type.Equals($"ArmamentType_{ShellType.HE.ShellTypeToString()}", StringComparison.OrdinalIgnoreCase);
             secondaryBatteryDataContainer.Dpm = (int)Math.Round(shellData.Damage * barrelCount * rof);
             secondaryBatteryDataContainer.TheoreticalDpm = secondaryBatteryDataContainer.Dpm.ToString("n0", nfi);
 
@@ -158,10 +159,15 @@ public partial class SecondaryBatteryDataContainer : DataContainerBase
         result[^1].IsLast = true;
 
         return result;
+#pragma warning restore IDE0047 // Remove unnecessary parentheses
     }
 
+#pragma warning disable IDE0060 // Remove unused parameter
+#pragma warning disable S1172 // Unused method parameters should be removed
     private bool ShouldDisplayFpm(object obj)
     {
         return this.DisplayFpm;
     }
+#pragma warning restore S1172 // Unused method parameters should be removed
+#pragma warning restore IDE0060 // Remove unused parameter
 }

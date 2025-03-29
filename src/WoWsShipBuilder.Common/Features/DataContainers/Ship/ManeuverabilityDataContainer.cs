@@ -62,11 +62,12 @@ public partial class ManeuverabilityDataContainer : DataContainerBase
 
     public static ManeuverabilityDataContainer FromShip(Ship ship, ImmutableList<ShipUpgrade> shipConfiguration, ImmutableList<Modifier> modifiers)
     {
+#pragma warning disable IDE0047 // Remove unnecessary parentheses
         var hull = ship.Hulls[shipConfiguration.First(upgrade => upgrade.UcType == ComponentType.Hull).Components[ComponentType.Hull][0]];
 
         var engine = ship.Engines[shipConfiguration.First(upgrade => upgrade.UcType == ComponentType.Engine).Components[ComponentType.Engine][0]];
 
-        decimal maxSpeedModifier = modifiers.ApplyModifiers("ManeuverabilityDataContainer.Speed", 1m);
+        var maxSpeedModifier = modifiers.ApplyModifiers("ManeuverabilityDataContainer.Speed", 1m);
 
         var speedBoostModifier = modifiers.ApplyModifiers("ManeuverabilityDataContainer.BoostCoeff.SpeedBoost", 0m);
         if (speedBoostModifier != 0)
@@ -74,20 +75,20 @@ public partial class ManeuverabilityDataContainer : DataContainerBase
             maxSpeedModifier += speedBoostModifier + modifiers.ApplyModifiers("ManeuverabilityDataContainer.SpeedBoostForsage", 0m); // Speed boost is additive, Halland UU bonus only applies if regular speed boost is active
         }
 
-        decimal maxDiveSpeedModifier = modifiers.ApplyModifiers("ManeuverabilityDataContainer.MaxDiveSpeed", 1m);
+        var maxDiveSpeedModifier = modifiers.ApplyModifiers("ManeuverabilityDataContainer.MaxDiveSpeed", 1m);
 
-        decimal divingPlaneShiftTimeModifier = modifiers.ApplyModifiers("ManeuverabilityDataContainer.DivingPlaneShiftTime", 1m);
+        var divingPlaneShiftTimeModifier = modifiers.ApplyModifiers("ManeuverabilityDataContainer.DivingPlaneShiftTime", 1m);
 
-        decimal enlargedPropellerShaftSpeedModifier = modifiers.ApplyModifiers("ManeuverabilityDataContainer.PropellerShaftSpeed", 1m);
+        var enlargedPropellerShaftSpeedModifier = modifiers.ApplyModifiers("ManeuverabilityDataContainer.PropellerShaftSpeed", 1m);
 
-        decimal rudderShiftModifier = modifiers.ApplyModifiers("ManeuverabilityDataContainer.RudderShiftTime", 1m);
+        var rudderShiftModifier = modifiers.ApplyModifiers("ManeuverabilityDataContainer.RudderShiftTime", 1m);
 
-        double engineForwardUpTimeModifiers = (double)modifiers.ApplyModifiers("ManeuverabilityDataContainer.EngineForwardUpTime", 1m);
-        double engineBackwardUpTimeModifiers = (double)modifiers.ApplyModifiers("ManeuverabilityDataContainer.EngineBackwardUpTime", 1m);
-        double engineForwardForsageMaxSpeedModifier = (double)modifiers.ApplyModifiers("ManeuverabilityDataContainer.EngineForwardForsageMaxSpeed", 1m);
-        double engineBackwardForsageMaxSpeedModifier = (double)modifiers.ApplyModifiers("ManeuverabilityDataContainer.EngineBackwardForsageMaxSpeed", 1m);
-        double engineForwardForsagePowerModifier = (double)modifiers.ApplyModifiers("ManeuverabilityDataContainer.EngineForwardForsagePower", 1m);
-        double engineBackwardForsagePowerModifier = (double)modifiers.ApplyModifiers("ManeuverabilityDataContainer.EngineBackwardForsagePower", 1m);
+        var engineForwardUpTimeModifiers = (double)modifiers.ApplyModifiers("ManeuverabilityDataContainer.EngineForwardUpTime", 1m);
+        var engineBackwardUpTimeModifiers = (double)modifiers.ApplyModifiers("ManeuverabilityDataContainer.EngineBackwardUpTime", 1m);
+        var engineForwardForsageMaxSpeedModifier = (double)modifiers.ApplyModifiers("ManeuverabilityDataContainer.EngineForwardForsageMaxSpeed", 1m);
+        var engineBackwardForsageMaxSpeedModifier = (double)modifiers.ApplyModifiers("ManeuverabilityDataContainer.EngineBackwardForsageMaxSpeed", 1m);
+        var engineForwardForsagePowerModifier = (double)modifiers.ApplyModifiers("ManeuverabilityDataContainer.EngineForwardForsagePower", 1m);
+        var engineBackwardForsagePowerModifier = (double)modifiers.ApplyModifiers("ManeuverabilityDataContainer.EngineBackwardForsagePower", 1m);
 
         var accelerationModifiers = new AccelerationCalculator.AccelerationModifiers((double)(maxSpeedModifier * enlargedPropellerShaftSpeedModifier), engineForwardUpTimeModifiers, engineBackwardUpTimeModifiers, engineForwardForsageMaxSpeedModifier, engineBackwardForsageMaxSpeedModifier, engineForwardForsagePowerModifier, engineBackwardForsagePowerModifier);
 
@@ -99,27 +100,27 @@ public partial class ManeuverabilityDataContainer : DataContainerBase
 
         var speedBoostAccelerationModifiers = new AccelerationCalculator.SpeedBoostAccelerationModifiers(speedBoostForwardEngineForsagMaxSpeedOverride, speedBoostBackwardEngineForsagMaxSpeedOverride, speedBoostForwardEngineForsagOverride, speedBoostBackwardEngineForsagOverride);
 
-        List<int> forward = new() { AccelerationCalculator.Zero, AccelerationCalculator.FullAhead };
-        List<int> reverse = new() { AccelerationCalculator.Zero, AccelerationCalculator.FullReverse };
+        List<int> forward = [AccelerationCalculator.Zero, AccelerationCalculator.FullAhead];
+        List<int> reverse = [AccelerationCalculator.Zero, AccelerationCalculator.FullReverse];
 
         var timeForward = AccelerationCalculator.CalculateAcceleration(ship.Index, hull, engine, ship.ShipClass, forward, accelerationModifiers, speedBoostAccelerationModifiers).TimeForGear.Single();
         var timeBackward = AccelerationCalculator.CalculateAcceleration(ship.Index, hull, engine, ship.ShipClass, reverse, accelerationModifiers, speedBoostAccelerationModifiers).TimeForGear.Single();
 
-        hull.MaxSpeedAtBuoyancyStateCoeff.TryGetValue(SubmarineBuoyancyStates.Periscope, out decimal speedAtPeriscopeCoeff);
-        hull.MaxSpeedAtBuoyancyStateCoeff.TryGetValue(SubmarineBuoyancyStates.DeepWater, out decimal speedAtMaxDepthCoeff);
+        hull.MaxSpeedAtBuoyancyStateCoeff.TryGetValue(SubmarineBuoyancyStates.Periscope, out var speedAtPeriscopeCoeff);
+        hull.MaxSpeedAtBuoyancyStateCoeff.TryGetValue(SubmarineBuoyancyStates.DeepWater, out var speedAtMaxDepthCoeff);
 
-        decimal baseShipSpeed = hull.MaxSpeed * (engine.SpeedCoef + 1);
-        decimal maxSpeed = baseShipSpeed * maxSpeedModifier;
-        decimal maxSpeedOnSurface = 0;
-        decimal maxSpeedAtPeriscope = 0;
-        decimal maxSpeedAtMaxDepth = 0;
-        decimal maxDiveSpeed = 0;
-        decimal maxReverseSpeed = ((baseShipSpeed / 4) + 4.9m) * maxSpeedModifier;
-        decimal maxReverseSpeedOnSurface = 0;
-        decimal maxReverseSpeedAtPeriscope = 0;
-        decimal maxReverseSpeedAtMaxDepth = 0;
+        var baseShipSpeed = hull.MaxSpeed * (engine.SpeedCoef + 1);
+        var maxSpeed = baseShipSpeed * maxSpeedModifier;
+        var maxSpeedOnSurface = 0m;
+        var maxSpeedAtPeriscope = 0m;
+        var maxSpeedAtMaxDepth = 0m;
+        var maxDiveSpeed = 0m;
+        var maxReverseSpeed = ((baseShipSpeed / 4) + 4.9m) * maxSpeedModifier;
+        var maxReverseSpeedOnSurface = 0m;
+        var maxReverseSpeedAtPeriscope = 0m;
+        var maxReverseSpeedAtMaxDepth = 0m;
 
-        decimal divingPlaneShiftTime = 0;
+        var divingPlaneShiftTime = 0m;
 
         if (ship.ShipClass == ShipClass.Submarine)
         {
@@ -159,5 +160,6 @@ public partial class ManeuverabilityDataContainer : DataContainerBase
         manoeuvrability.UpdateDataElements();
 
         return manoeuvrability;
+#pragma warning restore IDE0047 // Remove unnecessary parentheses
     }
 }

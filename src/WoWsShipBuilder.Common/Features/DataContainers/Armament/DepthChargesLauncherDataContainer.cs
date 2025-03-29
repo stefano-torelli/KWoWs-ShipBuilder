@@ -32,10 +32,10 @@ public partial class DepthChargesLauncherDataContainer : DataContainerBase
             return null;
         }
 
-        int ammoPerAttack = depthChargesArray.DepthCharges.Sum(charge => charge.DepthChargesNumber) * depthChargesArray.NumShots;
-        string ammoName = depthChargesArray.DepthCharges.First(charge => charge.DepthChargesNumber > 0).AmmoList[0];
+        var ammoPerAttack = depthChargesArray.DepthCharges.Sum(charge => charge.DepthChargesNumber) * depthChargesArray.NumShots;
+        var ammoName = depthChargesArray.DepthCharges.First(charge => charge.DepthChargesNumber > 0).AmmoList[0];
 
-        int numberOfUses = modifiers.ApplyModifiers("DepthChargesLauncherDataContainer.NumberOfUses", depthChargesArray.MaxPacks);
+        var numberOfUses = modifiers.ApplyModifiers("DepthChargesLauncherDataContainer.NumberOfUses", depthChargesArray.MaxPacks);
 
         var ammo = DepthChargeDataContainer.FromChargesName(ammoName, modifiers);
 

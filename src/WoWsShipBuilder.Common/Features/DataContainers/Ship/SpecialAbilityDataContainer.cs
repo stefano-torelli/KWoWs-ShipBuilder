@@ -47,7 +47,7 @@ public partial class SpecialAbilityDataContainer : DataContainerBase
 
     // This is in common
     [JsonIgnore]
-    public ImmutableList<Modifier> Modifiers { get; set; } = ImmutableList<Modifier>.Empty;
+    public ImmutableList<Modifier> Modifiers { get; set; } = [];
 
     public bool IsBurstMode { get; set; }
 
@@ -60,9 +60,9 @@ public partial class SpecialAbilityDataContainer : DataContainerBase
             var specialAbility = ship.SpecialAbility;
 
             var description = "";
-            if (!specialAbility.ActivatorName.Equals(""))
+            if (!string.IsNullOrWhiteSpace(specialAbility.ActivatorName))
             {
-                description = specialAbility.ActivatorName.Equals("RibbonActivator") ? $"RAGE_MODE_TRIGGER_DESCRIPTION_{specialAbility.ActivatorName}" : $"RAGE_MODE_DESCRIPTION_{specialAbility.ActivatorName}";
+                description = specialAbility.ActivatorName.Equals("RibbonActivator", StringComparison.OrdinalIgnoreCase) ? $"RAGE_MODE_TRIGGER_DESCRIPTION_{specialAbility.ActivatorName}" : $"RAGE_MODE_DESCRIPTION_{specialAbility.ActivatorName}";
             }
 
             specialDataContainer = new()
@@ -88,8 +88,8 @@ public partial class SpecialAbilityDataContainer : DataContainerBase
                 return null;
             }
 
-            ImmutableArray<string> artilleryOptions = artilleryConfiguration.Components[ComponentType.Artillery];
-            ImmutableArray<string> supportedModules = artilleryConfiguration.Components[ComponentType.Artillery];
+            var artilleryOptions = artilleryConfiguration.Components[ComponentType.Artillery];
+            var supportedModules = artilleryConfiguration.Components[ComponentType.Artillery];
 
             TurretModule? mainBattery;
             if (artilleryOptions.Length == 1)
@@ -98,7 +98,7 @@ public partial class SpecialAbilityDataContainer : DataContainerBase
             }
             else
             {
-                string hullArtilleryName = shipConfiguration.First(c => c.UcType == ComponentType.Hull).Components[ComponentType.Artillery].First(artilleryName => supportedModules.Contains(artilleryName));
+                var hullArtilleryName = shipConfiguration.First(c => c.UcType == ComponentType.Hull).Components[ComponentType.Artillery].First(artilleryName => supportedModules.Contains(artilleryName));
                 mainBattery = ship.MainBatteryModuleList[hullArtilleryName];
             }
 

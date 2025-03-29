@@ -18,7 +18,7 @@ public static class BallisticHelper
     private const double MaxAngles = 600;                                    // Max Angle                    | degrees
     private const double AngleStep = 0.00174533;                             // Angle Step                   | degrees    60 * Math.PI / 180. / n_angle //ELEV. ANGLES 0-30 deg, at launch
     private const double Dt = 0.02;                                          // Time step                    | s
-    private static List<double> calculationAngles = new();
+    private static readonly Lazy<List<double>> ComputedAngles = new(() => CreateCalculationAngles());
 
     /// <summary>
     /// Calculate the shell penetration given the parameter.
@@ -43,7 +43,7 @@ public static class BallisticHelper
     {
         var list = new List<double>();
 
-        for (int i = 0; i < MaxAngles; i++)
+        for (var i = 0; i < MaxAngles; i++)
         {
             list.Add(i * AngleStep);
         }
@@ -71,27 +71,21 @@ public static class BallisticHelper
     /// <returns>A dictionary with the <see cref="Ballistic"/> for each range.</returns>
     public static Dictionary<double, Ballistic> CalculateBallistic(ArtilleryShell shell, double maxRange, float penetration)
     {
+#pragma warning disable IDE0047
         var dict = new Dictionary<double, Ballistic>();
 
         // Increase max range to account for modifiers
         maxRange *= 1.5;
 
-        // Initialize the angle list. This way we calculate it only once, if it's needed.
-        //  No reason to calculate them if the user never try to see the ballistic data.
-        if (calculationAngles.Count == 0)
-        {
-            calculationAngles = CreateCalculationAngles();
-        }
-
-        double k = 0.5 * shell.AirDrag * Math.Pow(shell.Caliber / 2, 2) * Math.PI / shell.Mass;
+        var k = 0.5 * shell.AirDrag * (shell.Caliber * shell.Caliber / 4) * Math.PI / shell.Mass;
 
         // Insert pen at 0 distance
-        double initialPen = shell.ShellType != ShellType.AP ? penetration : CalculatePen(shell.MuzzleVelocity, shell.Caliber, shell.Mass, shell.Krupp);
-        var initialBallistic = new Ballistic(initialPen, shell.MuzzleVelocity, 0, 0, new());
+        var initialPen = shell.ShellType != ShellType.AP ? penetration : CalculatePen(shell.MuzzleVelocity, shell.Caliber, shell.Mass, shell.Krupp);
+        var initialBallistic = new Ballistic(initialPen, shell.MuzzleVelocity, 0, 0, []);
         dict.Add(0, initialBallistic);
         var lastRange = 0d;
 
-        foreach (double angle in calculationAngles)
+        foreach (var angle in ComputedAngles.Value)
         {
             var coordinates = new List<Coordinates>
             {
@@ -109,12 +103,12 @@ public static class BallisticHelper
             {
                 x += Dt * vX;
                 y += Dt * vY;
-#pragma warning disable SA1312 // Variable names should begin with lower-case letter
-                var T = T0 - (L * y);
-#pragma warning restore SA1312 // Variable names should begin with lower-case letter
-                var p = P0 * Math.Pow(T / T0, G * M / R / L);
 
-                var rhoG = (p * M) / R / T;
+                var capitalT = T0 - (L * y);
+
+                var p = P0 * Math.Pow(capitalT / T0, G * M / R / L);
+
+                var rhoG = p * M / R / capitalT;
 
                 var speed = Math.Sqrt((vX * vX) + (vY * vY));
 
@@ -145,6 +139,7 @@ public static class BallisticHelper
         }
 
         return dict;
+#pragma warning restore IDE0047
     }
 }
 

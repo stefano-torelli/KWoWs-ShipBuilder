@@ -6,6 +6,7 @@ using WoWsShipBuilder.DataStructures;
 using WoWsShipBuilder.DataStructures.Aircraft;
 using WoWsShipBuilder.DataStructures.Modifiers;
 using WoWsShipBuilder.DataStructures.Ship;
+using WoWsShipBuilder.Features.DataContainers.Projectiles;
 using WoWsShipBuilder.Infrastructure.ApplicationData;
 using WoWsShipBuilder.Infrastructure.GameData;
 
@@ -100,7 +101,7 @@ public partial class CvAircraftDataContainer : DataContainerBase
 
     public ProjectileDataContainer? Weapon { get; set; }
 
-    public ImmutableList<ConsumableDataContainer> PlaneConsumables { get; set; } = ImmutableList<ConsumableDataContainer>.Empty;
+    public ImmutableList<ConsumableDataContainer> PlaneConsumables { get; set; } = [];
 
     // TODO
     public decimal ArmamentReloadTime { get; set; }
@@ -149,8 +150,8 @@ public partial class CvAircraftDataContainer : DataContainerBase
 
         foreach (var value in planes)
         {
-            int index = value.IndexOf("_", StringComparison.InvariantCultureIgnoreCase);
-            string name = value.Substring(0, index);
+            var index = value.IndexOf("_", StringComparison.InvariantCultureIgnoreCase);
+            var name = value[..index];
             var plane = AppData.FindAircraft(name);
             var planeDataContainer = ProcessCvPlane(plane, ship.Tier, modifiers);
             list.Add(planeDataContainer);
@@ -161,14 +162,15 @@ public partial class CvAircraftDataContainer : DataContainerBase
 
     private static CvAircraftDataContainer ProcessCvPlane(Aircraft plane, int shipTier, ImmutableList<Modifier> modifiers)
     {
-        int maxOnDeck = modifiers.ApplyModifiers("CvAircraftDataContainer.MaxOnDeck", plane.MaxPlaneInHangar);
+#pragma warning disable IDE0047 // Remove unnecessary parentheses
+        var maxOnDeck = modifiers.ApplyModifiers("CvAircraftDataContainer.MaxOnDeck", plane.MaxPlaneInHangar);
 
-        decimal restorationTime = modifiers.ApplyModifiers("CvAircraftDataContainer.RestorationTime", (decimal)plane.RestorationTime);
+        var restorationTime = modifiers.ApplyModifiers("CvAircraftDataContainer.RestorationTime", (decimal)plane.RestorationTime);
 
         decimal planeHp = 0;
-        decimal cruisingSpeed = (decimal)plane.Speed;
-        decimal minSpeedMultiplier = (decimal)plane.SpeedMinModifier;
-        decimal maxSpeedMultiplier = (decimal)plane.SpeedMaxModifier;
+        var cruisingSpeed = (decimal)plane.Speed;
+        var minSpeedMultiplier = (decimal)plane.SpeedMinModifier;
+        var maxSpeedMultiplier = (decimal)plane.SpeedMaxModifier;
         var planesConcealmentFromShips = (decimal)plane.ConcealmentFromShips;
         var planesConcealmentFromPlanes = (decimal)plane.ConcealmentFromPlanes;
         decimal aimRateModifier = 1;
@@ -228,7 +230,7 @@ public partial class CvAircraftDataContainer : DataContainerBase
             finalPlaneHp += additionalPlaneHp;
         }
 
-        decimal finalCruisingSpeed = modifiers.ApplyModifiers("CvAircraftDataContainer.Speed", cruisingSpeed);
+        var finalCruisingSpeed = modifiers.ApplyModifiers("CvAircraftDataContainer.Speed", cruisingSpeed);
 
         maxSpeedMultiplier = modifiers.ApplyModifiers("CvAircraftDataContainer.MaxSpeed", maxSpeedMultiplier);
 
@@ -268,14 +270,14 @@ public partial class CvAircraftDataContainer : DataContainerBase
                 break;
         }
 
-        List<ConsumableDataContainer> consumables = new();
+        List<ConsumableDataContainer> consumables = [];
         foreach (var consumable in plane.AircraftConsumable)
         {
             var consumableDataContainer = ConsumableDataContainer.FromTypeAndVariant(consumable, modifiers, true, 0, ShipClass.AirCarrier);
             consumables.Add(consumableDataContainer);
         }
 
-        consumables = consumables.OrderBy(x => x.Slot).ToList();
+        consumables = [.. consumables.OrderBy(x => x.Slot)];
 
         var aimingRateMoving = plane.AimingAccuracyIncreaseRate + plane.AimingAccuracyDecreaseRate;
         var preparationAimingRateMoving = plane.PreparationAccuracyIncreaseRate + plane.PreparationAccuracyDecreaseRate;
@@ -308,7 +310,7 @@ public partial class CvAircraftDataContainer : DataContainerBase
             JatoSpeedMultiplier = Math.Round(jatoSpeedMultiplier, 0),
             WeaponType = weaponType.ProjectileTypeToString(),
             Weapon = weapon,
-            PlaneConsumables = consumables.ToImmutableList(),
+            PlaneConsumables = [.. consumables],
             AimingTime = Math.Round(aimingTime, 1),
             PreparationTime = plane.PreparationTime,
             PostAttackInvulnerabilityDuration = plane.PostAttackInvulnerabilityDuration,
@@ -324,5 +326,6 @@ public partial class CvAircraftDataContainer : DataContainerBase
         cvAircraft.UpdateDataElements();
 
         return cvAircraft;
+#pragma warning restore IDE0047 // Remove unnecessary parentheses
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -105,7 +105,7 @@ public class FirebaseLinkShortenerTests
         var logger = new Mock<ILogger<FirebaseLinkShortener>>();
         var linkShortener = new FirebaseLinkShortener(mockHttp.ToHttpClient(), Options.Create(options), logger.Object);
 
-        bool result = linkShortener.IsAvailable;
+        var result = linkShortener.IsAvailable;
 
         result.Should().BeTrue();
     }
@@ -122,7 +122,7 @@ public class FirebaseLinkShortenerTests
         var logger = new Mock<ILogger<FirebaseLinkShortener>>();
         var linkShortener = new FirebaseLinkShortener(mockHttp.ToHttpClient(), Options.Create(options), logger.Object);
 
-        bool result = linkShortener.IsAvailable;
+        var result = linkShortener.IsAvailable;
 
         result.Should().BeFalse();
     }

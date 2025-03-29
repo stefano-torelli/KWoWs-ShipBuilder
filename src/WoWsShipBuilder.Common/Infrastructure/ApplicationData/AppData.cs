@@ -34,7 +34,7 @@ public static class AppData
     /// <summary>
     /// Gets the ship dictionary for the currently selected nation.
     /// </summary>
-    public static Dictionary<string, Ship> ShipDictionary { get; } = new();
+    public static Dictionary<string, Ship> ShipDictionary { get; } = [];
 
     /// <summary>
     /// Gets or sets the ship data structure for the fitting tool ship selector.
@@ -44,7 +44,7 @@ public static class AppData
     /// <summary>
     /// Gets or sets the list of available consumables.
     /// </summary>
-    public static Dictionary<string, Consumable> ConsumableList { get; set; } = new();
+    public static Dictionary<string, Consumable> ConsumableList { get; set; } = [];
 
     /// <summary>
     /// Gets the projectile cache, mapping a nation to the actual projectile dictionary for that nation.
@@ -52,19 +52,19 @@ public static class AppData
     /// </summary>
     /// <seealso cref="FindProjectile"/>
     /// <seealso cref="FindProjectile{T}"/>
-    public static Dictionary<Nation, Dictionary<string, Projectile>> ProjectileCache { get; } = new();
+    public static Dictionary<Nation, Dictionary<string, Projectile>> ProjectileCache { get; } = [];
 
     /// <summary>
     /// Gets the aircraft cache, mapping a nation to the actual aircraft dictionary for that nation.
     /// </summary>
     /// <seealso cref="FindAircraft"/>
-    public static ConcurrentDictionary<Nation, Dictionary<string, Aircraft>> AircraftCache { get; } = new();
+    public static ConcurrentDictionary<Nation, Dictionary<string, Aircraft>> AircraftCache { get; } = [];
 
-    public static ConcurrentDictionary<Nation, Dictionary<string, Exterior>> ExteriorCache { get; } = new();
+    public static ConcurrentDictionary<Nation, Dictionary<string, Exterior>> ExteriorCache { get; } = [];
 
-    public static ConcurrentDictionary<Nation, Dictionary<string, Captain>> CaptainCache { get; } = new();
+    public static ConcurrentDictionary<Nation, Dictionary<string, Captain>> CaptainCache { get; } = [];
 
-    public static Dictionary<string, Modernization> ModernizationCache { get; set; } = new();
+    public static Dictionary<string, Modernization> ModernizationCache { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the list of <see cref="ShipSummary">ship summaries</see> that are currently available.

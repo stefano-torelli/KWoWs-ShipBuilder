@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using WoWsShipBuilder.DataStructures.Versioning;
@@ -9,48 +9,33 @@ using WoWsShipBuilder.Infrastructure.Utility;
 
 namespace WoWsShipBuilder.Web.Infrastructure.Data;
 
-public class ServerAppDataService : IAppDataService
+public class ServerAppDataService(IAwsClient awsClient, IOptions<CdnOptions> options, ILogger<ServerAppDataService> logger) : IAppDataService
 {
-    private readonly IAwsClient awsClient;
-
-    private readonly CdnOptions options;
-
-    private readonly ILogger<ServerAppDataService> logger;
-
+    private readonly CdnOptions options = options.Value;
     private VersionInfo? versionInfo;
 
-    public string DefaultAppDataDirectory { get; }
+    public string DefaultAppDataDirectory { get; } = string.Empty;
 
-    public string AppDataDirectory { get; }
+    public string AppDataDirectory { get; } = string.Empty;
 
-    public string AppDataImageDirectory { get; }
-
-    public ServerAppDataService(IAwsClient awsClient, IOptions<CdnOptions> options, ILogger<ServerAppDataService> logger)
-    {
-        this.awsClient = awsClient;
-        this.options = options.Value;
-        this.logger = logger;
-        this.DefaultAppDataDirectory = string.Empty;
-        this.AppDataDirectory = string.Empty;
-        this.AppDataImageDirectory = string.Empty;
-    }
+    public string AppDataImageDirectory { get; } = string.Empty;
 
     public async Task FetchData()
     {
-        this.logger.LogInformation("Starting to fetch data with server type {Server}...", this.options.Server);
+        logger.LogInformation("Starting to fetch data with server type {Server}...", this.options.Server);
         const string undefinedMarker = "undefined";
         AppData.ResetCaches();
 
-        var onlineVersionInfo = await this.awsClient.DownloadVersionInfo(this.options.Server);
+        var onlineVersionInfo = await awsClient.DownloadVersionInfo(this.options.Server);
         if (onlineVersionInfo.CurrentVersion is not null) // check for null for legacy compatibility
         {
             AppData.DataVersion = Helpers.ComputeFullVersionString(onlineVersionInfo);
-            this.logger.LogInformation("Found online version info with version {Version}", AppData.DataVersion);
+            logger.LogInformation("Found online version info with version {Version}", AppData.DataVersion);
         }
         else
         {
             AppData.DataVersion = undefinedMarker;
-            this.logger.LogWarning("Online version info not available");
+            logger.LogWarning("Online version info not available");
         }
 
         SentrySdk.ConfigureScope(scope =>
@@ -65,24 +50,24 @@ public class ServerAppDataService : IAppDataService
             scope.SetTag("data.server", onlineVersionInfo.CurrentVersion?.VersionType.ToString() ?? undefinedMarker);
         });
         var files = onlineVersionInfo.Categories.SelectMany(category => category.Value.Select(file => (category.Key, file.FileName))).ToList();
-        await this.awsClient.DownloadFiles(this.options.Server, files);
+        await awsClient.DownloadFiles(this.options.Server, files);
         Helpers.InitializeShipSelectorDataStructure();
-        this.logger.LogInformation("Finished fetching data");
+        logger.LogInformation("Finished fetching data");
     }
 
     public async Task LoadLocalFilesAsync(ServerType serverType)
     {
         AppData.ResetCaches();
         const string shipBuilderDirectory = "WoWsShipBuilderDev";
-        string dataRoot = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), shipBuilderDirectory, "json", serverType.StringName());
+        var dataRoot = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), shipBuilderDirectory, "json", serverType.StringName());
 
-        string versionInfoContent = await File.ReadAllTextAsync(Path.Join(dataRoot, "VersionInfo.json"));
+        var versionInfoContent = await File.ReadAllTextAsync(Path.Join(dataRoot, "VersionInfo.json"));
         var localVersionInfo = JsonSerializer.Deserialize<VersionInfo>(versionInfoContent, AppConstants.JsonSerializerOptions)!;
 
         AppData.DataVersion = Helpers.ComputeFullVersionString(localVersionInfo);
 
         var dataRootInfo = new DirectoryInfo(dataRoot);
-        DirectoryInfo[] categories = dataRootInfo.GetDirectories();
+        var categories = dataRootInfo.GetDirectories();
         foreach (var category in categories)
         {
             if (category.Name.Contains("Localization", StringComparison.InvariantCultureIgnoreCase))
@@ -91,7 +76,7 @@ public class ServerAppDataService : IAppDataService
             }
             foreach (var file in category.GetFiles())
             {
-                string content = await File.ReadAllTextAsync(file.FullName);
+                var content = await File.ReadAllTextAsync(file.FullName);
                 await DataCacheHelper.AddToCache(file.Name, category.Name, content);
             }
         }
@@ -101,7 +86,7 @@ public class ServerAppDataService : IAppDataService
 
     public async Task<VersionInfo?> GetCurrentVersionInfo(ServerType serverType)
     {
-        this.versionInfo ??= await this.awsClient.DownloadVersionInfo(serverType);
+        this.versionInfo ??= await awsClient.DownloadVersionInfo(serverType);
         return this.versionInfo;
     }
 
@@ -110,18 +95,18 @@ public class ServerAppDataService : IAppDataService
         if (this.options.UseLocalFiles)
         {
             const string shipBuilderDirectory = "WoWsShipBuilderDev";
-            string localizationRoot = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), shipBuilderDirectory, "json", this.options.Server.StringName(), "Localization");
-            string file = Path.Join(localizationRoot, $"{language}.json");
+            var localizationRoot = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), shipBuilderDirectory, "json", this.options.Server.StringName(), "Localization");
+            var file = Path.Join(localizationRoot, $"{language}.json");
             if (!File.Exists(file))
             {
-                return new();
+                return [];
             }
 
-            string fileContent = await File.ReadAllTextAsync(Path.Join(localizationRoot, $"{language}.json"));
+            var fileContent = await File.ReadAllTextAsync(Path.Join(localizationRoot, $"{language}.json"));
             return JsonSerializer.Deserialize<Dictionary<string, string>>(fileContent, AppConstants.JsonSerializerOptions);
         }
 
-        if (this.awsClient is ServerAwsClient serverAwsClient)
+        if (awsClient is ServerAwsClient serverAwsClient)
         {
             return await serverAwsClient.DownloadLocalization(language, serverType);
         }

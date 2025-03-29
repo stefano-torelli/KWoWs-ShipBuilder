@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using DynamicData;
 using Microsoft.Extensions.Logging;
@@ -30,13 +30,13 @@ public class ConsumableViewModel : ReactiveObject, IBuildComponentProvider
     {
         this.ship = ship;
         this.logger = logger;
-        this.ConsumableSlots = new();
+        this.ConsumableSlots = [];
     }
 
     /// <summary>
     /// Gets an ObservableCollection containing the slot numbers of all activated consumable slots.
     /// </summary>
-    public ObservableCollection<int> ActivatedSlots { get; } = new();
+    public ObservableCollection<int> ActivatedSlots { get; } = [];
 
     /// <summary>
     /// Gets an ObservableCollection containing a viewmodel for each consumable slot.
@@ -71,7 +71,7 @@ public class ConsumableViewModel : ReactiveObject, IBuildComponentProvider
 
     public List<string> SaveBuild()
     {
-        return this.ConsumableSlots.Select(slot => slot.SelectedConsumable.IconName.NameToIndex()).ToList();
+        return [.. this.ConsumableSlots.Select(slot => slot.SelectedConsumable.IconName.NameToIndex())];
     }
 
     /// <summary>
@@ -89,16 +89,16 @@ public class ConsumableViewModel : ReactiveObject, IBuildComponentProvider
     public IEnumerable<Modifier> GetModifiersList()
     {
         var modifiers = new List<Modifier>();
-        foreach (int slot in this.ActivatedSlots)
+        foreach (var slot in this.ActivatedSlots)
         {
             var consumable = this.ConsumableSlots[slot].SelectedConsumable;
             if (consumable.Name.Contains("PCY015"))
             {
-                modifiers.AddRange(consumable.Modifiers.Select(entry => new Modifier("speedBoost_" + entry.Name, entry.Value, entry.GameLocalizationKey, entry.AppLocalizationKey, entry.Unit, entry.AffectedProperties.Select(x => x + ".SpeedBoost").ToImmutableHashSet(), entry.DisplayValueProcessingKind, entry.ValueProcessingKind)));
+                modifiers.AddRange(consumable.Modifiers.Select(entry => new Modifier("speedBoost_" + entry.Name, entry.Value, entry.GameLocalizationKey, entry.AppLocalizationKey, entry.Unit, [.. entry.AffectedProperties.Select(x => x + ".SpeedBoost")], entry.DisplayValueProcessingKind, entry.ValueProcessingKind)));
             }
             else if (consumable.Name.Contains("PCY010"))
             {
-                modifiers.AddRange(consumable.Modifiers.Select(entry => new Modifier("heal_" + entry.Name, entry.Value, entry.GameLocalizationKey, entry.AppLocalizationKey, entry.Unit, entry.AffectedProperties.Select(x => x + ".Heal").ToImmutableHashSet(), entry.DisplayValueProcessingKind, entry.ValueProcessingKind)));
+                modifiers.AddRange(consumable.Modifiers.Select(entry => new Modifier("heal_" + entry.Name, entry.Value, entry.GameLocalizationKey, entry.AppLocalizationKey, entry.Unit, [.. entry.AffectedProperties.Select(x => x + ".Heal")], entry.DisplayValueProcessingKind, entry.ValueProcessingKind)));
             }
             else
             {

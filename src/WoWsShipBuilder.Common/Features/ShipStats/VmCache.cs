@@ -1,10 +1,10 @@
-﻿using WoWsShipBuilder.Features.ShipStats.ViewModels;
+using WoWsShipBuilder.Features.ShipStats.ViewModels;
 
 namespace WoWsShipBuilder.Features.ShipStats;
 
 public sealed class VmCache : IDisposable
 {
-    private readonly Dictionary<Guid, VmCacheEntry?> cacheEntries = new();
+    private readonly Dictionary<Guid, VmCacheEntry?> cacheEntries = [];
 
     public VmCacheEntry? this[Guid id]
     {

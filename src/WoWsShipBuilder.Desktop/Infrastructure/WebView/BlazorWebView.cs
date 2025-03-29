@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Metadata;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -7,11 +8,14 @@ using Avalonia.Platform;
 using DynamicData;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 using Microsoft.Web.WebView2.Core;
+using WoWsShipBuilder.Features.DataContainers;
 using Color = System.Drawing.Color;
 
 namespace WoWsShipBuilder.Desktop.Infrastructure.WebView;
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
 [SuppressMessage("Design", "CA1001", Justification = "Disposal happens in OnDetachedFromVisualTree")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
 public class BlazorWebView : NativeControlHost
 {
     private Uri? source;
@@ -19,7 +23,6 @@ public class BlazorWebView : NativeControlHost
     private double zoomFactor = 1.0;
     private string? hostPage;
     private IServiceProvider serviceProvider = default!;
-    private RootComponentsCollection rootComponents = new();
     private string defaultDownloadPath = string.Empty;
 
     /// <summary>
@@ -113,7 +116,7 @@ public class BlazorWebView : NativeControlHost
 
         set
         {
-            if (this.zoomFactor != value)
+            if (Math.Abs(this.zoomFactor - value) <= Constants.EpsilonNearToZero)
             {
                 this.zoomFactor = value;
                 if (this.blazorWebView != null)
@@ -137,11 +140,7 @@ public class BlazorWebView : NativeControlHost
         }
     }
 
-    public RootComponentsCollection RootComponents
-    {
-        get => this.rootComponents;
-        set => this.rootComponents = value;
-    }
+    public RootComponentsCollection RootComponents { get; set; } = [];
 
     public string DefaultDownloadFolderPath
     {
@@ -178,7 +177,7 @@ public class BlazorWebView : NativeControlHost
             this.blazorWebView.WebView.CoreWebView2InitializationCompleted += this.WebViewOnCoreWebView2InitializationCompleted;
             this.blazorWebView.WebView.DefaultBackgroundColor = Color.FromArgb(255, 40, 40, 40);
             this.blazorWebView.WebView.ZoomFactor = Math.Clamp(this.zoomFactor, 0.1, 4.0);
-            this.blazorWebView.RootComponents.AddRange(this.rootComponents);
+            this.blazorWebView.RootComponents.AddRange(this.RootComponents);
             return new PlatformHandle(this.blazorWebView.Handle, "HWND");
         }
 

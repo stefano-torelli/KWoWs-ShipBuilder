@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -11,12 +11,14 @@ namespace WoWsShipBuilder.Data.Generator.DataElementGenerator;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class DataElementAnalyzer : DiagnosticAnalyzer
 {
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
+    [
         Rules.InvalidDataElementTypeRule,
         Rules.MissingSecondaryDataElementTypeRule,
         Rules.GroupKeyMissingRule,
         Rules.MissingAttributeParametersRule,
-        Rules.IncompatibleAttributeParametersRule);
+        Rules.IncompatibleAttributeParametersRule,
+    ];
 
     public override void Initialize(AnalysisContext context)
     {

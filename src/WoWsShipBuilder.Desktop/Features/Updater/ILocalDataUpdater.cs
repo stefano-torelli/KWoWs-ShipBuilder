@@ -23,7 +23,7 @@ public interface ILocalDataUpdater
     /// <param name="progressTracker">An <see cref="IProgress{T}"/> instance that is used to track and report the progress of the data update.</param>
     /// <param name="overrideDateCheck">A bool forcing the update to run, regardless of other checks.</param>
     /// <returns>The task running the operation.</returns>
-    public Task RunDataUpdateCheck(ServerType serverType, IProgress<(int, string)> progressTracker, bool overrideDateCheck = false);
+    Task RunDataUpdateCheck(ServerType serverType, IProgress<(int, string)> progressTracker, bool overrideDateCheck = false);
 
     /// <summary>
     /// Checks the versions of the local application data and compares them with the newest version available online.
@@ -32,7 +32,7 @@ public interface ILocalDataUpdater
     /// </summary>
     /// <param name="serverType">The currently selected <see cref="ServerType"/> of the application.</param>
     /// <returns>The task running the operation.</returns>
-    public Task<UpdateCheckResult> CheckJsonFileVersions(ServerType serverType);
+    Task<UpdateCheckResult> CheckJsonFileVersions(ServerType serverType);
 
     /// <summary>
     /// Checks the localization data and triggers update requests for all localizations matching the update criteria.
@@ -40,7 +40,7 @@ public interface ILocalDataUpdater
     /// </summary>
     /// <param name="serverType">The currently selected <see cref="ServerType"/> of the application.</param>
     /// <returns>The task running the operation.</returns>
-    public Task UpdateLocalization(ServerType serverType);
+    Task UpdateLocalization(ServerType serverType);
 
     /// <summary>
     /// Validates local application data by comparing the version info file with the actual local files.
@@ -48,14 +48,19 @@ public interface ILocalDataUpdater
     /// <param name="serverType">The currently selected <see cref="ServerType"/> of the application.</param>
     /// <param name="dataBasePath">The base file system path to the directory of the local VersionInfo file.</param>
     /// <returns><see langword="true"/> if the local data matches the structure of the version info file, <see langword="false"/> otherwise.</returns>
-    public Task<ValidationResult> ValidateData(ServerType serverType, string dataBasePath);
+    Task<ValidationResult> ValidateData(ServerType serverType, string dataBasePath);
 
     /// <summary>
     /// Checks whether the update should be executed or not.
     /// </summary>
     /// <param name="serverType">The currently selected <see cref="ServerType"/> of the application.</param>
     /// <returns><see langword="true"/> if the updater should run, <see langword="false"/> otherwise.</returns>
-    public Task<bool> ShouldUpdaterRun(ServerType serverType);
+    Task<bool> ShouldUpdaterRun(ServerType serverType);
 
-    public Task CheckInstalledLocalizations(ServerType serverType);
+    /// <summary>
+    /// Checks the installed localizations and triggers update requests for all localizations that are not installed.
+    /// </summary>
+    /// <param name="serverType">The currently selected <see cref="ServerType"/> of the application.</param>
+    /// <returns>The task running the operation.</returns>
+    Task CheckInstalledLocalizations(ServerType serverType);
 }

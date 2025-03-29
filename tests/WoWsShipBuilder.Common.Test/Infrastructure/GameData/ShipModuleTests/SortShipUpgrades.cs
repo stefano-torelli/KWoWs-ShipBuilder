@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using WoWsShipBuilder.DataStructures;
 using WoWsShipBuilder.DataStructures.Ship;
 using WoWsShipBuilder.Infrastructure.GameData;
@@ -15,7 +15,7 @@ namespace WoWsShipBuilder.Test.Infrastructure.GameData.ShipModuleTests
 
             var sortedData = ShipModuleHelper.GroupAndSortUpgrades(data);
 
-            foreach ((ComponentType type, var upgrades) in sortedData)
+            foreach ((var type, var upgrades) in sortedData)
             {
                 var upgradeTypes = upgrades.Select(x => x.UcType).Distinct().ToList();
                 upgradeTypes.Single().Should().Be(type);
@@ -28,15 +28,15 @@ namespace WoWsShipBuilder.Test.Infrastructure.GameData.ShipModuleTests
 
         private List<ShipUpgrade> CreateUpgradeList()
         {
-            return new()
-            {
+            return
+            [
                 new() { UcType = ComponentType.Artillery, Name = "3", Prev = "2" },
                 new() { UcType = ComponentType.Artillery, Name = "1", Prev = "" },
                 new() { UcType = ComponentType.Artillery, Name = "2", Prev = "1" },
                 new() { UcType = ComponentType.Hull, Name = "2", Prev = "1" },
                 new() { UcType = ComponentType.Hull, Name = "3", Prev = "2" },
                 new() { UcType = ComponentType.Hull, Name = "1", Prev = "" },
-            };
+            ];
         }
     }
 }

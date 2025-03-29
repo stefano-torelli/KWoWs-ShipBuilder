@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using DynamicData;
 using Microsoft.JSInterop;
@@ -12,33 +12,25 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace WoWsShipBuilder.Web.Infrastructure.Data;
 
-public sealed class WebUserDataService : IUserDataService, IAsyncDisposable
+public sealed class WebUserDataService(IJSRuntime runtime, ISnackbar snackbar, IDialogService dialogService, ILocalizer localizer) : IUserDataService, IAsyncDisposable
 {
     private const string JsFileName = "/scripts/userDataService.js";
 
     private const string BuildFileName = "recentBuilds";
 
-    private readonly IJSRuntime runtime;
+    private readonly IJSRuntime runtime = runtime;
 
-    private readonly ISnackbar snackbar;
+    private readonly ISnackbar snackbar = snackbar;
 
-    private readonly IDialogService dialogService;
+    private readonly IDialogService dialogService = dialogService;
 
-    private readonly ILocalizer localizer;
+    private readonly ILocalizer localizer = localizer;
 
     private IJSObjectReference? module;
 
     private List<Build>? savedBuilds;
 
     private const int LocalStorageLimit = 1000;
-
-    public WebUserDataService(IJSRuntime runtime, ISnackbar snackbar, IDialogService dialogService, ILocalizer localizer)
-    {
-        this.snackbar = snackbar;
-        this.runtime = runtime;
-        this.dialogService = dialogService;
-        this.localizer = localizer;
-    }
 
     public async Task SaveBuildsAsync(IEnumerable<Build> builds)
     {
@@ -72,7 +64,7 @@ public sealed class WebUserDataService : IUserDataService, IAsyncDisposable
             {
                 var builds = new List<Build>();
                 var counter = 0;
-                foreach (string buildString in buildList)
+                foreach (var buildString in buildList)
                 {
                     try
                     {
@@ -109,7 +101,7 @@ public sealed class WebUserDataService : IUserDataService, IAsyncDisposable
         this.snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomEnd;
 
         var buildsList = builds.ToList();
-        int buildsUpdated = await this.AddOrUpdateBuilds(buildsList);
+        var buildsUpdated = await this.AddOrUpdateBuilds(buildsList);
 
         if (buildsUpdated == -1)
         {
@@ -181,7 +173,7 @@ public sealed class WebUserDataService : IUserDataService, IAsyncDisposable
         foreach (var build in buildsList)
         {
             buildsNotNeedingUpdate += this.savedBuilds.RemoveAll(x => x.Equals(build));
-            var buildToUpdate = this.savedBuilds.Find(x => x.ShipIndex.Equals(build.ShipIndex, StringComparison.Ordinal) && x.BuildName.Equals(build.BuildName, StringComparison.Ordinal));
+            var buildToUpdate = this.savedBuilds.Find(x => x.ShipIndex.Equals(build.ShipIndex, StringComparison.OrdinalIgnoreCase) && x.BuildName.Equals(build.BuildName, StringComparison.OrdinalIgnoreCase));
             if (buildToUpdate != null)
             {
                 DialogOptions options = new()
@@ -197,7 +189,7 @@ public sealed class WebUserDataService : IUserDataService, IAsyncDisposable
                 var result = await (await this.dialogService.ShowAsync<OverwriteExistingBuildConfirmationDialog>(string.Empty, parameters, options)).Result;
                 if (result is not null && !result.Canceled && (bool)(result.Data ?? false))
                 {
-                    int index = this.savedBuilds.IndexOf(buildToUpdate);
+                    var index = this.savedBuilds.IndexOf(buildToUpdate);
                     this.savedBuilds.Remove(buildToUpdate);
                     this.savedBuilds.Insert(index, build);
                     this.snackbar.Add(this.localizer.SimpleAppLocalization(nameof(Translation.UserDataService_BuildUpdated)), Severity.Success);

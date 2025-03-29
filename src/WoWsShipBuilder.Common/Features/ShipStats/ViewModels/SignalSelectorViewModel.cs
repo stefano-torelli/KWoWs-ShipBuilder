@@ -31,9 +31,9 @@ public class SignalSelectorViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref this.signalsNumber, value);
     }
 
-    public CustomObservableCollection<Exterior> SelectedSignals { get; } = new();
+    public CustomObservableCollection<Exterior> SelectedSignals { get; } = [];
 
-    // TODO: update to new nullability state
+    // Update to new nullability state
     private static List<KeyValuePair<string, SignalItemViewModel>> LoadSignalList()
     {
         var list = AppData.ExteriorCache[Nation.Common]
@@ -62,12 +62,12 @@ public class SignalSelectorViewModel : ReactiveObject
 
     public List<Modifier> GetModifierList()
     {
-        return this.SelectedSignals.SelectMany(m => m.Modifiers).ToList();
+        return [.. this.SelectedSignals.SelectMany(m => m.Modifiers)];
     }
 
     public List<string> GetFlagList()
     {
-        return this.SelectedSignals.Select(signal => signal.Index).ToList();
+        return [.. this.SelectedSignals.Select(signal => signal.Index)];
     }
 
     public void LoadBuild(IReadOnlyList<string> initialSignalsNames)
@@ -97,16 +97,11 @@ public class SignalSelectorViewModel : ReactiveObject
     }
 }
 
-public class SignalItemViewModel : ReactiveObject
+public class SignalItemViewModel(Exterior exterior) : ReactiveObject
 {
     private bool canExecute;
 
-    public SignalItemViewModel(Exterior exterior)
-    {
-        this.Signal = exterior;
-    }
-
-    public Exterior Signal { get; }
+    public Exterior Signal { get; } = exterior;
 
     public bool CanExecute
     {

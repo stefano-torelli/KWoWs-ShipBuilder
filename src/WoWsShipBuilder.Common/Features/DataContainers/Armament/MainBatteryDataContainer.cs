@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
 using WoWsShipBuilder.DataElements;
@@ -17,7 +17,7 @@ public partial class MainBatteryDataContainer : DataContainerBase
     [DataElementType(DataElementTypes.FormattedText, ArgumentsCollectionName = "TurretNames", ArgumentsTextKind = TextKind.LocalizationKey)]
     public string Name { get; set; } = default!;
 
-    public ImmutableList<string> TurretNames { get; set; } = ImmutableList<string>.Empty;
+    public ImmutableList<string> TurretNames { get; set; } = [];
 
     [DataElementType(DataElementTypes.KeyValueUnit, UnitKey = "KM")]
     public decimal Range { get; set; }
@@ -84,7 +84,7 @@ public partial class MainBatteryDataContainer : DataContainerBase
 
     public decimal TaperDist { get; set; }
 
-    public ImmutableList<ShellDataContainer> ShellData { get; set; } = ImmutableList<ShellDataContainer>.Empty;
+    public ImmutableList<ShellDataContainer> ShellData { get; set; } = [];
 
     public Dispersion DispersionData { get; set; } = default!;
 
@@ -106,6 +106,7 @@ public partial class MainBatteryDataContainer : DataContainerBase
 
     public static MainBatteryDataContainer? FromShip(Ship ship, ImmutableList<ShipUpgrade> shipConfiguration, ImmutableList<Modifier> modifiers)
     {
+#pragma warning disable IDE0047 // Remove unnecessary parentheses
         var artilleryConfiguration = shipConfiguration.Find(c => c.UcType == ComponentType.Artillery);
         if (artilleryConfiguration == null)
         {
@@ -122,7 +123,7 @@ public partial class MainBatteryDataContainer : DataContainerBase
         }
         else
         {
-            string hullArtilleryName = shipConfiguration.First(c => c.UcType == ComponentType.Hull).Components[ComponentType.Artillery].First(artilleryName => supportedModules.Contains(artilleryName));
+            var hullArtilleryName = shipConfiguration.First(c => c.UcType == ComponentType.Hull).Components[ComponentType.Artillery].First(artilleryName => supportedModules.Contains(artilleryName));
             mainBattery = ship.MainBatteryModuleList[hullArtilleryName];
         }
 
@@ -142,35 +143,35 @@ public partial class MainBatteryDataContainer : DataContainerBase
 
         for (var i = 0; i < arrangementList.Count; i++)
         {
-            var current = arrangementList[i];
-            turretNames.Add(current.GunName);
-            arrangementString.AppendLine(CultureInfo.InvariantCulture, $"{current.TurretCount}x{current.BarrelCount} {{{i}}}");
-            barrelLayout[i] = $"{current.TurretCount}x{current.BarrelCount}";
-            barrelCount += current.TurretCount * current.BarrelCount;
+            var (barrelCount1, turretCount, gunName) = arrangementList[i];
+            turretNames.Add(gunName);
+            arrangementString.AppendLine(CultureInfo.InvariantCulture, $"{turretCount}x{barrelCount1} {{{i}}}");
+            barrelLayout[i] = $"{turretCount}x{barrelCount1}";
+            barrelCount += turretCount * barrelCount1;
         }
 
         var gun = mainBattery.Guns[0];
 
         // Calculate main battery reload
-        decimal reload = modifiers.ApplyModifiers("MainBatteryDataContainer.Reload", gun.Reload);
+        var reload = modifiers.ApplyModifiers("MainBatteryDataContainer.Reload", gun.Reload);
 
-        decimal ammoSwitchTime = modifiers.ApplyModifiers("MainBatteryDataContainer.AmmoSwitchTime", reload * gun.AmmoSwitchCoeff);
+        var ammoSwitchTime = modifiers.ApplyModifiers("MainBatteryDataContainer.AmmoSwitchTime", reload * gun.AmmoSwitchCoeff);
 
         // Rotation speed modifiers
-        decimal traverseSpeed = modifiers.ApplyModifiers("MainBatteryDataContainer.TraverseSpeed", gun.HorizontalRotationSpeed);
+        var traverseSpeed = modifiers.ApplyModifiers("MainBatteryDataContainer.TraverseSpeed", gun.HorizontalRotationSpeed);
 
         // Range modifiers
-        decimal gunRange = mainBattery.MaxRange * (suoConfiguration?.MaxRangeModifier ?? 1);
-        decimal range = modifiers.ApplyModifiers("MainBatteryDataContainer.Range", gunRange) / 1000;
+        var gunRange = mainBattery.MaxRange * (suoConfiguration?.MaxRangeModifier ?? 1);
+        var range = modifiers.ApplyModifiers("MainBatteryDataContainer.Range", gunRange) / 1000;
 
         // Consider dispersion modifiers
         var dispersionModifier = (float)modifiers.ApplyModifiers("MainBatteryDataContainer.Dispersion.IdealRadius", 1m);
         var dispersion = gun.Dispersion;
 
-        decimal rateOfFire = 60 / reload;
+        var rateOfFire = 60 / reload;
 
         var maxRangeBw = (double)(range / 30);
-        double vRadiusCoeff = (dispersion.RadiusOnMax - dispersion.RadiusOnDelim) / (maxRangeBw * (1 - dispersion.Delim));
+        var vRadiusCoeff = (dispersion.RadiusOnMax - dispersion.RadiusOnDelim) / (maxRangeBw * (1 - dispersion.Delim));
 
         var nfi = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
         nfi.NumberGroupSeparator = "'";
@@ -183,7 +184,7 @@ public partial class MainBatteryDataContainer : DataContainerBase
         var mainBatteryDataContainer = new MainBatteryDataContainer
         {
             Name = arrangementString.ToString(),
-            TurretNames = turretNames.ToImmutableList(),
+            TurretNames = [.. turretNames],
             Range = Math.Round(range, 2),
             Reload = Math.Round(reload, 2),
             AmmoSwitchTime = Math.Round(ammoSwitchTime, 2),
@@ -202,7 +203,7 @@ public partial class MainBatteryDataContainer : DataContainerBase
             DispersionData = dispersion,
             DispersionModifier = dispersionModifier,
             OriginalMainBatteryData = mainBattery,
-            ShellData = shellData.ToImmutableList(),
+            ShellData = [.. shellData],
             DisplayHeDpm = shellData.Select(x => x.Type).Contains($"ArmamentType_{ShellType.HE.ShellTypeToString()}"),
             DisplayApDpm = shellData.Select(x => x.Type).Contains($"ArmamentType_{ShellType.AP.ShellTypeToString()}"),
             DisplaySapDpm = shellData.Select(x => x.Type).Contains($"ArmamentType_{ShellType.SAP.ShellTypeToString()}"),
@@ -213,7 +214,7 @@ public partial class MainBatteryDataContainer : DataContainerBase
 
         if (mainBatteryDataContainer.DisplayHeDpm)
         {
-            var heShell = shellData.First(x => x.Type.Equals($"ArmamentType_{ShellType.HE.ShellTypeToString()}", StringComparison.Ordinal));
+            var heShell = shellData.First(x => x.Type.Equals($"ArmamentType_{ShellType.HE.ShellTypeToString()}", StringComparison.OrdinalIgnoreCase));
             mainBatteryDataContainer.TheoreticalHeDpm = Math.Round(heShell.Damage * barrelCount * rateOfFire).ToString("n0", nfi);
             mainBatteryDataContainer.HeSalvo = Math.Round(heShell.Damage * barrelCount).ToString("n0", nfi);
             mainBatteryDataContainer.PotentialFpm = Math.Round(heShell.ShellFireChance / 100 * barrelCount * rateOfFire, 2);
@@ -221,22 +222,25 @@ public partial class MainBatteryDataContainer : DataContainerBase
 
         if (mainBatteryDataContainer.DisplayApDpm)
         {
-            decimal shellDamage = shellData.First(x => x.Type.Equals($"ArmamentType_{ShellType.AP.ShellTypeToString()}", StringComparison.Ordinal)).Damage;
+            var shellDamage = shellData.First(x => x.Type.Equals($"ArmamentType_{ShellType.AP.ShellTypeToString()}", StringComparison.OrdinalIgnoreCase)).Damage;
             mainBatteryDataContainer.TheoreticalApDpm = Math.Round(shellDamage * barrelCount * rateOfFire).ToString("n0", nfi);
             mainBatteryDataContainer.ApSalvo = Math.Round(shellDamage * barrelCount).ToString("n0", nfi);
         }
 
         if (mainBatteryDataContainer.DisplaySapDpm)
         {
-            decimal shellDamage = shellData.First(x => x.Type.Equals($"ArmamentType_{ShellType.SAP.ShellTypeToString()}", StringComparison.Ordinal)).Damage;
+            var shellDamage = shellData.First(x => x.Type.Equals($"ArmamentType_{ShellType.SAP.ShellTypeToString()}", StringComparison.OrdinalIgnoreCase)).Damage;
             mainBatteryDataContainer.TheoreticalSapDpm = Math.Round(shellDamage * barrelCount * rateOfFire).ToString("n0", nfi);
             mainBatteryDataContainer.SapSalvo = Math.Round(shellDamage * barrelCount).ToString("n0", nfi);
         }
 
         mainBatteryDataContainer.UpdateDataElements();
         return mainBatteryDataContainer;
+#pragma warning restore IDE0047 // Remove unnecessary parentheses
     }
 
+#pragma warning disable IDE0060 // Remove unused parameter
+#pragma warning disable S1172 // Unused method parameters should be removed
     private bool ShouldDisplayHeDpm(object obj)
     {
         return this.DisplayHeDpm;
@@ -251,4 +255,6 @@ public partial class MainBatteryDataContainer : DataContainerBase
     {
         return this.DisplaySapDpm;
     }
+#pragma warning restore S1172 // Unused method parameters should be removed
+#pragma warning restore IDE0060 // Remove unused parameter
 }

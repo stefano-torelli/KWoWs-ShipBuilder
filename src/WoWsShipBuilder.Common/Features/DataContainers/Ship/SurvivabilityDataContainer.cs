@@ -95,10 +95,11 @@ public partial class SurvivabilityDataContainer : DataContainerBase
 
     public static SurvivabilityDataContainer FromShip(Ship ship, ImmutableList<ShipUpgrade> shipConfiguration, ImmutableList<Modifier> modifiers)
     {
-        Hull shipHull = ship.Hulls[shipConfiguration.First(upgrade => upgrade.UcType == ComponentType.Hull).Components[ComponentType.Hull].First()];
+#pragma warning disable IDE0047 // Remove unnecessary parentheses
+        var shipHull = ship.Hulls[shipConfiguration.First(upgrade => upgrade.UcType == ComponentType.Hull).Components[ComponentType.Hull].First()];
 
         // Survivability expert
-        decimal hitPoints = shipHull.Health;
+        var hitPoints = shipHull.Health;
         var survivabilityExpertAdditionalHp = modifiers.ApplyModifiers("SurvivabilityDataContainer.Hp", ship.Tier);
 
         // if it's below 15, the modifier is not present.
@@ -109,30 +110,29 @@ public partial class SurvivabilityDataContainer : DataContainerBase
 
         hitPoints = modifiers.ApplyModifiers("SurvivabilityDataContainer.Hp.Permanent", hitPoints);
 
-        int fireSpots = modifiers.ApplyModifiers("SurvivabilityDataContainer.FireResistance", shipHull.FireSpots);
-
-        decimal fireDuration = modifiers.ApplyModifiers("SurvivabilityDataContainer.FireDuration", shipHull.FireDuration);
-        decimal floodDuration = modifiers.ApplyModifiers("SurvivabilityDataContainer.FloodDuration", shipHull.FloodingDuration);
+        var fireSpots = modifiers.ApplyModifiers("SurvivabilityDataContainer.FireResistance", shipHull.FireSpots);
+        var fireDuration = modifiers.ApplyModifiers("SurvivabilityDataContainer.FireDuration", shipHull.FireDuration);
+        var floodDuration = modifiers.ApplyModifiers("SurvivabilityDataContainer.FloodDuration", shipHull.FloodingDuration);
 
         // fire chance reduction = base fire resistance +(100 - base fire resistance) *(1 - burnProb)
-        decimal baseFireResistance = 1 - shipHull.FireResistance;
-        decimal fireResistanceModifiers = modifiers.ApplyModifiers("SurvivabilityDataContainer.FireChanceResistance", 1M);
-        decimal fireResistance = baseFireResistance + ((1 - baseFireResistance) * (1 - fireResistanceModifiers));
+        var baseFireResistance = 1 - shipHull.FireResistance;
+        var fireResistanceModifiers = modifiers.ApplyModifiers("SurvivabilityDataContainer.FireChanceResistance", 1M);
+        var fireResistance = baseFireResistance + ((1 - baseFireResistance) * (1 - fireResistanceModifiers));
 
-        decimal modifiedFloodingCoeff = modifiers.ApplyModifiers("SurvivabilityDataContainer.FloodChanceResistance", shipHull.FloodingResistance * 3) * 100;
+        var modifiedFloodingCoeff = modifiers.ApplyModifiers("SurvivabilityDataContainer.FloodChanceResistance", shipHull.FloodingResistance * 3) * 100;
 
-        decimal fireDps = hitPoints * shipHull.FireTickDamage / 100;
+        var fireDps = hitPoints * shipHull.FireTickDamage / 100;
         fireDps = modifiers.ApplyModifiers("SurvivabilityDataContainer.FireDamageWeakness", fireDps);
-        decimal fireTotalDamage = fireDuration * fireDps;
+        var fireTotalDamage = fireDuration * fireDps;
 
-        decimal floodDps = hitPoints * shipHull.FloodingTickDamage / 100;
+        var floodDps = hitPoints * shipHull.FloodingTickDamage / 100;
         floodDps = modifiers.ApplyModifiers("SurvivabilityDataContainer.FloodDamageWeakness", floodDps);
-        decimal floodTotalDamage = floodDuration * floodDps;
+        var floodTotalDamage = floodDuration * floodDps;
 
-        decimal diveCapacityRechargeRateModifier = modifiers.ApplyModifiers("SurvivabilityDataContainer.DiveCapacityRecharge", 1m);
-        decimal diveCapacityModifier = modifiers.ApplyModifiers("SurvivabilityDataContainer.DiveCapacity", 1m);
+        var diveCapacityRechargeRateModifier = modifiers.ApplyModifiers("SurvivabilityDataContainer.DiveCapacityRecharge", 1m);
+        var diveCapacityModifier = modifiers.ApplyModifiers("SurvivabilityDataContainer.DiveCapacity", 1m);
 
-        decimal repairableDamageModifier = modifiers.ApplyModifiers("SurvivabilityDataContainer.RepairableDamage", 0m);
+        var repairableDamageModifier = modifiers.ApplyModifiers("SurvivabilityDataContainer.RepairableDamage", 0m);
 
         var survivability = new SurvivabilityDataContainer
         {
@@ -189,5 +189,6 @@ public partial class SurvivabilityDataContainer : DataContainerBase
         survivability.UpdateDataElements();
 
         return survivability;
+#pragma warning restore IDE0047 // Remove unnecessary parentheses
     }
 }

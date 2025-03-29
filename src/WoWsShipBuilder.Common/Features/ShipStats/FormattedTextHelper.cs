@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using WoWsShipBuilder.DataElements;
 using WoWsShipBuilder.Infrastructure.Localization;
 
@@ -8,7 +8,7 @@ public static class FormattedTextHelper
 {
     public static string ConvertFormattedText(FormattedTextDataElement formattedTextDataElement, ILocalizer localizer)
     {
-        string text = formattedTextDataElement.ValueTextKind switch
+        var text = formattedTextDataElement.ValueTextKind switch
         {
             DataElementTextKind.Plain => formattedTextDataElement.Text,
             DataElementTextKind.LocalizationKey => localizer.SimpleGameLocalization(formattedTextDataElement.Text),
@@ -16,7 +16,7 @@ public static class FormattedTextHelper
             _ => throw new NotSupportedException("Invalid value for ValueTextKind"),
         };
 
-        IEnumerable<string> values = formattedTextDataElement.ArgumentsTextKind switch
+        var values = formattedTextDataElement.ArgumentsTextKind switch
         {
             DataElementTextKind.Plain => formattedTextDataElement.Arguments,
             DataElementTextKind.LocalizationKey => formattedTextDataElement.Arguments.Select(localizer.SimpleGameLocalization),

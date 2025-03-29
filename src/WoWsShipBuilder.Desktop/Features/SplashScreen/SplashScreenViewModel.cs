@@ -12,19 +12,19 @@ using WoWsShipBuilder.Infrastructure.Utility;
 
 namespace WoWsShipBuilder.Desktop.Features.SplashScreen;
 
-public partial class SplashScreenViewModel : ReactiveObject
+public partial class SplashScreenViewModel(ILocalDataUpdater localDataUpdater, ILocalizationProvider localizationProvider, IAppDataService appDataService, AppSettings appSettings, ILogger<SplashScreenViewModel> logger) : ReactiveObject
 {
     private const int TaskNumber = 4;
 
-    private readonly ILocalDataUpdater localDataUpdater;
+    private readonly ILocalDataUpdater localDataUpdater = localDataUpdater;
 
-    private readonly ILocalizationProvider localizationProvider;
+    private readonly ILocalizationProvider localizationProvider = localizationProvider;
 
-    private readonly IAppDataService appDataService;
+    private readonly IAppDataService appDataService = appDataService;
 
-    private readonly AppSettings appSettings;
+    private readonly AppSettings appSettings = appSettings;
 
-    private readonly ILogger<SplashScreenViewModel> logger;
+    private readonly ILogger<SplashScreenViewModel> logger = logger;
 
     [Observable]
     private int progress;
@@ -35,15 +35,6 @@ public partial class SplashScreenViewModel : ReactiveObject
     public SplashScreenViewModel()
         : this(null!, null!, null!, new(), NullLogger<SplashScreenViewModel>.Instance)
     {
-    }
-
-    public SplashScreenViewModel(ILocalDataUpdater localDataUpdater, ILocalizationProvider localizationProvider, IAppDataService appDataService, AppSettings appSettings, ILogger<SplashScreenViewModel> logger)
-    {
-        this.localDataUpdater = localDataUpdater;
-        this.localizationProvider = localizationProvider;
-        this.appDataService = appDataService;
-        this.appSettings = appSettings;
-        this.logger = logger;
     }
 
     public async Task VersionCheck(bool forceVersionCheck = false, bool throwOnException = false)

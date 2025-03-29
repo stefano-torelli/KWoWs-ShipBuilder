@@ -15,7 +15,7 @@ public partial class TorpedoArmamentDataContainer : DataContainerBase
     [DataElementType(DataElementTypes.FormattedText, ArgumentsCollectionName = "LauncherNames", ArgumentsTextKind = TextKind.LocalizationKey)]
     public string Name { get; set; } = default!;
 
-    public ImmutableList<string> LauncherNames { get; set; } = ImmutableList<string>.Empty;
+    public ImmutableList<string> LauncherNames { get; set; } = [];
 
     [DataElementType(DataElementTypes.Grouped | DataElementTypes.KeyValue, GroupKey = "Loaders")]
     public string BowLoaders { get; set; } = default!;
@@ -59,7 +59,7 @@ public partial class TorpedoArmamentDataContainer : DataContainerBase
 
     public string TorpLayout { get; set; } = default!;
 
-    public ImmutableList<TorpedoDataContainer> Torpedoes { get; set; } = ImmutableList<TorpedoDataContainer>.Empty;
+    public ImmutableList<TorpedoDataContainer> Torpedoes { get; set; } = [];
 
     public IEnumerable<TorpedoLauncher> TorpedoLaunchers { get; private set; } = default!;
 
@@ -71,8 +71,8 @@ public partial class TorpedoArmamentDataContainer : DataContainerBase
             return null;
         }
 
-        ImmutableArray<string> torpedoOptions = torpConfiguration.Components[ComponentType.Torpedoes];
-        ImmutableArray<string> supportedModules = torpConfiguration.Components[ComponentType.Torpedoes];
+        var torpedoOptions = torpConfiguration.Components[ComponentType.Torpedoes];
+        var supportedModules = torpConfiguration.Components[ComponentType.Torpedoes];
 
         TorpedoModule? torpedoModule;
         if (torpedoOptions.Length == 1)
@@ -81,17 +81,16 @@ public partial class TorpedoArmamentDataContainer : DataContainerBase
         }
         else
         {
-            string hullTorpedoName = shipConfiguration.First(c => c.UcType == ComponentType.Hull).Components[ComponentType.Torpedoes].First(torpedoName => supportedModules.Contains(torpedoName));
+            var hullTorpedoName = shipConfiguration.First(c => c.UcType == ComponentType.Hull).Components[ComponentType.Torpedoes].First(torpedoName => supportedModules.Contains(torpedoName));
             torpedoModule = ship.TorpedoModules[hullTorpedoName];
         }
 
         var launcher = torpedoModule.TorpedoLaunchers[0];
 
-        List<(int BarrelCount, int LauncherCount, string LauncherName)> arrangementList = torpedoModule.TorpedoLaunchers
+        List<(int BarrelCount, int LauncherCount, string LauncherName)> arrangementList = [.. torpedoModule.TorpedoLaunchers
             .GroupBy(torpModule => torpModule.NumBarrels)
             .Select(group => (BarrelCount: group.Key, TorpCount: group.Count(), LauncherName: group.First().Name))
-            .OrderBy(item => item.TorpCount)
-            .ToList();
+            .OrderBy(item => item.TorpCount)];
 
         var torpCount = 0;
         StringBuilder arrangementString = new();
@@ -100,18 +99,18 @@ public partial class TorpedoArmamentDataContainer : DataContainerBase
 
         for (var i = 0; i < arrangementList.Count; i++)
         {
-            var current = arrangementList[i];
-            launcherNames.Add(current.LauncherName);
-            arrangementString.AppendLine(CultureInfo.InvariantCulture, $"{current.LauncherCount}x{current.BarrelCount} {{{i}}}");
-            torpLayout[i] = $"{current.LauncherCount}x{current.BarrelCount}";
-            torpCount += current.LauncherCount * current.BarrelCount;
+            var (barrelCount, launcherCount, launcherName) = arrangementList[i];
+            launcherNames.Add(launcherName);
+            arrangementString.AppendLine(CultureInfo.InvariantCulture, $"{launcherCount}x{barrelCount} {{{i}}}");
+            torpLayout[i] = $"{launcherCount}x{barrelCount}";
+            torpCount += launcherCount * barrelCount;
         }
 
-        decimal traverseSpeed = modifiers.ApplyModifiers("TorpedoArmamentDataContainer.TraverseSpeed", launcher.HorizontalRotationSpeed);
+        var traverseSpeed = modifiers.ApplyModifiers("TorpedoArmamentDataContainer.TraverseSpeed", launcher.HorizontalRotationSpeed);
 
-        decimal reloadSpeed = modifiers.ApplyModifiers("TorpedoArmamentDataContainer.Reload", launcher.Reload);
+        var reloadSpeed = modifiers.ApplyModifiers("TorpedoArmamentDataContainer.Reload", launcher.Reload);
 
-        string torpedoArea = $"{launcher.TorpedoAngles[0]} - {Math.Round(launcher.TorpedoAngles[1], 1)}"; // only the second one needs rounding
+        var torpedoArea = $"{launcher.TorpedoAngles[0]} - {Math.Round(launcher.TorpedoAngles[1], 1)}"; // only the second one needs rounding
 
         var torpedoes = TorpedoDataContainer.FromTorpedoName(launcher.AmmoList, modifiers, false);
 
@@ -131,12 +130,12 @@ public partial class TorpedoArmamentDataContainer : DataContainerBase
         var torpedoArmamentDataContainer = new TorpedoArmamentDataContainer
         {
             Name = arrangementString.ToString(),
-            LauncherNames = launcherNames.ToImmutableList(),
+            LauncherNames = [.. launcherNames],
             TurnTime = Math.Round(180 / traverseSpeed, 1),
             TraverseSpeed = Math.Round(traverseSpeed, 2),
             Reload = Math.Round(reloadSpeed, 2),
             TorpedoArea = torpedoArea,
-            Torpedoes = torpedoes.ToImmutableList(),
+            Torpedoes = [.. torpedoes],
             TimeToSwitch = Math.Round(reloadSpeed * launcher.AmmoSwitchCoeff, 1),
             TorpedoLaunchers = torpedoModule.TorpedoLaunchers,
             TorpLayout = string.Join(" + ", torpLayout),

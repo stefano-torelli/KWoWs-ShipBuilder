@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using ReactiveUI;
 using WoWsShipBuilder.DataStructures;
 using WoWsShipBuilder.DataStructures.Captain;
@@ -25,12 +25,12 @@ public class SkillItemViewModel : ReactiveObject
         this.SkillTier = this.SkillPosition.Tier;
         this.canAddCache = canAddCache;
         this.canRemoveCache = canRemoveCache;
-        this.Modifiers = skill.Modifiers.Where(x => !x.Name.Contains('_') || x.Name.StartsWith("repeatable_", StringComparison.Ordinal) || x.Name.Contains("_" + shipClass)).ToList();
+        this.Modifiers = [.. skill.Modifiers.Where(x => !x.Name.Contains('_') || x.Name.StartsWith("repeatable_", StringComparison.OrdinalIgnoreCase) || x.Name.Contains("_" + shipClass))];
 
-        this.ConditionalModifierGroups = new();
+        this.ConditionalModifierGroups = [];
         foreach (var group in skill.ConditionalModifierGroups)
         {
-            this.ConditionalModifierGroups.Add(group with { Modifiers = group.Modifiers.Where(x => !x.Name.Contains('_') || x.Name.Contains("_" + shipClass)).ToImmutableList() });
+            this.ConditionalModifierGroups.Add(group with { Modifiers = [.. group.Modifiers.Where(x => !x.Name.Contains('_') || x.Name.Contains("_" + shipClass))] });
         }
 
         this.shipClass = shipClass;
@@ -56,14 +56,14 @@ public class SkillItemViewModel : ReactiveObject
 
     public void CanExecuteChanged()
     {
-        bool result = !this.parent.SkillOrderList.Contains(this.Skill) ? this.CanAddSkill() : this.CanRemoveSkill();
+        var result = !this.parent.SkillOrderList.Contains(this.Skill) ? this.CanAddSkill() : this.CanRemoveSkill();
         this.CanExecute = result;
     }
 
     private bool CanAddSkill()
     {
         bool result;
-        if (this.canAddCache.TryGetValue(this.SkillTier, out bool canAdd))
+        if (this.canAddCache.TryGetValue(this.SkillTier, out var canAdd))
         {
             return canAdd;
         }
@@ -97,14 +97,14 @@ public class SkillItemViewModel : ReactiveObject
             return true;
         }
 
-        if (this.canRemoveCache.TryGetValue(this.SkillTier, out bool canRemove))
+        if (this.canRemoveCache.TryGetValue(this.SkillTier, out var canRemove))
         {
             return canRemove;
         }
 
         var skillTiers = this.parent.SkillOrderList.Select(iteratedSkill => iteratedSkill.Tiers.First(x => x.ShipClass == this.shipClass).Tier).ToList();
-        int nextTierSkillCount = skillTiers.Count(skillCost => skillCost > this.SkillTier);
-        int sameTierSkillCount = skillTiers.Count(skillCost => skillCost == this.SkillTier);
+        var nextTierSkillCount = skillTiers.Count(skillCost => skillCost > this.SkillTier);
+        var sameTierSkillCount = skillTiers.Count(skillCost => skillCost == this.SkillTier);
 
         bool result;
         if (nextTierSkillCount > 0)

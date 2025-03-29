@@ -1,6 +1,8 @@
-﻿namespace WoWsShipBuilder.Features.ShipComparison;
+namespace WoWsShipBuilder.Features.ShipComparison;
 
-#pragma warning disable CA1036
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable CA1036 // Override methods on comparable types
+#pragma warning disable S1210 // "Equals" and the comparison operators should be overridden when implementing "IComparable"
 public class NoSortList<T> : List<T>, IComparable
 #pragma warning restore CA1036
 {
@@ -17,4 +19,7 @@ public class NoSortList<T> : List<T>, IComparable
     {
         return 0;
     }
+#pragma warning restore S1210 // "Equals" and the comparison operators should be overridden when implementing "IComparable"
+#pragma warning restore CA1036 // Override methods on comparable types
+#pragma warning restore IDE0079 // Remove unnecessary suppression
 }

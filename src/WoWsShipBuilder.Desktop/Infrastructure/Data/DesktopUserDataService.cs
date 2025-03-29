@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
@@ -12,25 +12,17 @@ using WoWsShipBuilder.Infrastructure.ApplicationData;
 
 namespace WoWsShipBuilder.Desktop.Infrastructure.Data;
 
-public class DesktopUserDataService : IUserDataService
+public class DesktopUserDataService(IDataService dataService, IAppDataService appDataService, IFileSystem fileSystem, IDialogService dialogService) : IUserDataService
 {
-    private readonly IDataService dataService;
+    private readonly IDataService dataService = dataService;
 
-    private readonly IAppDataService appDataService;
+    private readonly IAppDataService appDataService = appDataService;
 
-    private readonly IFileSystem fileSystem;
+    private readonly IFileSystem fileSystem = fileSystem;
 
-    private readonly IDialogService dialogService;
+    private readonly IDialogService dialogService = dialogService;
 
     private List<Build>? savedBuilds;
-
-    public DesktopUserDataService(IDataService dataService, IAppDataService appDataService, IFileSystem fileSystem, IDialogService dialogService)
-    {
-        this.dataService = dataService;
-        this.appDataService = appDataService;
-        this.fileSystem = fileSystem;
-        this.dialogService = dialogService;
-    }
 
     public async Task SaveBuildsAsync(IEnumerable<Build> builds)
     {
@@ -46,11 +38,11 @@ public class DesktopUserDataService : IUserDataService
             return this.savedBuilds;
         }
 
-        string path = this.dataService.CombinePaths(this.appDataService.DefaultAppDataDirectory, "builds.json");
+        var path = this.dataService.CombinePaths(this.appDataService.DefaultAppDataDirectory, "builds.json");
 
         if (!this.fileSystem.File.Exists(path))
         {
-            return Enumerable.Empty<Build>();
+            return [];
         }
 
         List<string>? buildList = null;
@@ -66,7 +58,7 @@ public class DesktopUserDataService : IUserDataService
         if (buildList is not null)
         {
             var builds = new List<Build>();
-            foreach (string buildString in buildList)
+            foreach (var buildString in buildList)
             {
                 try
                 {
@@ -82,7 +74,7 @@ public class DesktopUserDataService : IUserDataService
                 }
             }
 
-            this.savedBuilds = builds.DistinctBy(x => x.Hash).ToList();
+            this.savedBuilds = [.. builds.DistinctBy(x => x.Hash)];
         }
 
         return this.savedBuilds ?? Enumerable.Empty<Build>();
@@ -90,20 +82,20 @@ public class DesktopUserDataService : IUserDataService
 
     public async Task ImportBuildsAsync(IEnumerable<Build> builds)
     {
-        this.savedBuilds ??= (await this.LoadBuildsAsync()).ToList();
+        this.savedBuilds ??= [.. await this.LoadBuildsAsync()];
 
         var buildsList = builds.ToList();
 
         foreach (var build in buildsList.Where(x => AppData.ShipDictionary.ContainsKey(x.ShipIndex)))
         {
             this.savedBuilds.RemoveAll(x => x.Equals(build));
-            var buildToUpdate = this.savedBuilds.Find(x => x.ShipIndex.Equals(build.ShipIndex, StringComparison.Ordinal) && x.BuildName.Equals(build.BuildName, StringComparison.Ordinal));
+            var buildToUpdate = this.savedBuilds.Find(x => x.ShipIndex.Equals(build.ShipIndex, StringComparison.OrdinalIgnoreCase) && x.BuildName.Equals(build.BuildName, StringComparison.OrdinalIgnoreCase));
             if (buildToUpdate != null)
             {
-                bool updateBuild = await this.OpenUpdateBuildConfirmationDialog(buildToUpdate);
+                var updateBuild = await this.OpenUpdateBuildConfirmationDialog(buildToUpdate);
                 if (updateBuild)
                 {
-                    int index = this.savedBuilds.IndexOf(buildToUpdate);
+                    var index = this.savedBuilds.IndexOf(buildToUpdate);
                     this.savedBuilds.Remove(buildToUpdate);
                     this.savedBuilds.Insert(index, build);
                 }
@@ -117,13 +109,13 @@ public class DesktopUserDataService : IUserDataService
         await this.SaveBuildsAsync(this.savedBuilds);
     }
 
-    public async Task SaveBuildAsync(Build build) => await this.ImportBuildsAsync(new List<Build> { build });
+    public async Task SaveBuildAsync(Build build) => await this.ImportBuildsAsync([build]);
 
-    public async Task RemoveSavedBuildAsync(Build build) => await this.RemoveSavedBuildsAsync(new List<Build> { build });
+    public async Task RemoveSavedBuildAsync(Build build) => await this.RemoveSavedBuildsAsync([build]);
 
     public async Task RemoveSavedBuildsAsync(IEnumerable<Build> builds)
     {
-        this.savedBuilds ??= (await this.LoadBuildsAsync()).ToList();
+        this.savedBuilds ??= [.. await this.LoadBuildsAsync()];
         this.savedBuilds.RemoveMany(builds);
 
         await this.SaveBuildsAsync(this.savedBuilds);

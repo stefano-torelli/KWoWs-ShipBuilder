@@ -33,9 +33,9 @@ public class AntiAirDataContainer
             guns = ship.MainBatteryModuleList[shipConfiguration.First(upgrade => upgrade.UcType == ComponentType.Artillery).Components[ComponentType.Artillery][0]];
         }
 
-        decimal flakDamageBonus = modifiers.ApplyModifiers("AntiAirDataContainer.FlakDamage", 1M);
+        var flakDamageBonus = modifiers.ApplyModifiers("AntiAirDataContainer.FlakDamage", 1M);
 
-        decimal constantDamageBonus = modifiers.ApplyModifiers("AntiAirDataContainer.ConstantDamage", 1M);
+        var constantDamageBonus = modifiers.ApplyModifiers("AntiAirDataContainer.ConstantDamage", 1M);
 
         var aaUI = new AntiAirDataContainer();
 
@@ -80,7 +80,7 @@ public class AntiAirDataContainer
         if (flakAmount > 0)
         {
             var flakAverage = (int)(flakAmount * antiAirAura.HitChance);
-            int flakDelta = flakAmount - flakAverage;
+            var flakDelta = flakAmount - flakAverage;
             flakNumber = $"{flakAverage} ± {flakDelta}";
         }
 
