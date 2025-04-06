@@ -1,20 +1,14 @@
-﻿using WoWsShipBuilder.Infrastructure.Metrics;
+using WoWsShipBuilder.Infrastructure.Metrics;
 
 namespace WoWsShipBuilder.Web.Infrastructure.Metrics;
 
-public class ReferrerTrackingMiddleware
+public class ReferrerTrackingMiddleware(RequestDelegate next, MetricsService metricsService)
 {
     private const string ReferrerQueryParamName = "ref";
 
-    private readonly RequestDelegate next;
+    private readonly RequestDelegate next = next;
 
-    private readonly MetricsService metricsService;
-
-    public ReferrerTrackingMiddleware(RequestDelegate next, MetricsService metricsService)
-    {
-        this.next = next;
-        this.metricsService = metricsService;
-    }
+    private readonly MetricsService metricsService = metricsService;
 
     public async Task InvokeAsync(HttpContext context)
     {
