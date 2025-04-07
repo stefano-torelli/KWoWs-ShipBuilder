@@ -11,14 +11,14 @@
     <PackageVersion Include="Avalonia.ReactiveUI" Version="11.2.3" />
     <PackageVersion Include="Avalonia.Themes.Simple" Version="11.2.3" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
-    <PackageVersion Include="FluentAssertions" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.12" />
+    <PackageVersion Include="FluentAssertions" Version="8.2.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.50" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="1.1.2" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="1.1.2" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.12.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.13.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageVersion Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="MudBlazor" Version="8.5.1" />
